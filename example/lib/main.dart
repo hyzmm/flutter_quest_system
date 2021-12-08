@@ -170,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                       onPressed: () {
-                        Get.to(() => Quest2Page(), routeName: routeQ2);
+                        Get.to(() => const Quest2Page(), routeName: routeQ2);
                       },
                       child: const Text("Press me")),
                 ],
@@ -192,8 +192,8 @@ class _Quest2PageState extends State<Quest2Page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Quest 2")),
-      body: Center(child: Text("Back to complete quest 2")),
+      appBar: AppBar(title: const Text("Quest 2")),
+      body: const Center(child: Text("Back to complete quest 2")),
     );
   }
 }

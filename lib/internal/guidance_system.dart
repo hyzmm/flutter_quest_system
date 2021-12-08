@@ -45,4 +45,11 @@ class GuidanceSystem {
       quest.check(data);
     }
   }
+
+  static List<Map<String, dynamic>> exportJson() =>
+      instance.sequences.map((e) => e.exportJson()).toList();
+
+  // void importJson(List<Map<String, dynamic>> json) {
+  //   sequences.addAll(json.map((e) => QuestSequence.fromJson(e)).toList());
+  // }
 }

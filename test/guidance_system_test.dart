@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guidance_system/internal/checker.dart';
 import 'package:guidance_system/internal/guidance_system.dart';
@@ -6,6 +8,11 @@ import 'package:guidance_system/internal/trigger/custom_trigger.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
 
 enum QuestCondition { c1, c2, c3, c4, c5, c6 }
+
+enum QuestSeqId {
+  seq1,
+  seq2,
+}
 enum QuestId {
   q1,
   q2,
@@ -30,7 +37,7 @@ main() {
   });
 
   test("single task queue", () {
-    GuidanceSystem.addSequence(QuestSequence(quests: [
+    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
       Quest(
         id: QuestId.q1,
         triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -42,7 +49,7 @@ main() {
         completeChecker: QuestChecker(condition: QuestCondition.c2),
       )
     ]));
-    GuidanceSystem.addSequence(QuestSequence(quests: [
+    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
       Quest(
         id: QuestId.q3,
         triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -70,7 +77,7 @@ main() {
 
   test("auto active sub-quests, and manually complete parent quest", () {
     GuidanceSystem.addSequence(
-      QuestSequence(quests: [
+      QuestSequence(id: Object(), quests: [
         Quest(
             id: QuestId.q4,
             triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -117,8 +124,8 @@ main() {
   });
 
   test("auto active sub-quests, and auto complete parent quest", () {
-    GuidanceSystem.instance.sequences.add(
-      QuestSequence(quests: [
+    GuidanceSystem.addSequence(
+      QuestSequence(id: Object(), quests: [
         Quest.completeByChildren(
             id: QuestId.q1,
             triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -149,5 +156,35 @@ main() {
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c4));
 
     expect(q.status, QuestStatus.completed);
+  });
+
+  test("serialize", () {
+    GuidanceSystem.addSequence(
+      QuestSequence(id: QuestSeqId.seq1, quests: [
+        Quest.completeByChildren(
+            id: QuestId.q1,
+            triggerChecker: QuestChecker(condition: QuestCondition.c1),
+            children: [
+              Quest.activatedByParent(
+                id: QuestId.q2,
+                completeChecker: QuestChecker(condition: QuestCondition.c2),
+              ),
+            ]),
+        Quest(
+          id: QuestId.q3,
+          triggerChecker: QuestChecker.autoActivate(),
+          completeChecker: QuestChecker(condition: QuestCondition.c3),
+        ),
+      ]),
+    );
+    var data = GuidanceSystem.exportJson();
+    expect(jsonEncode(data),
+        '[{"id":"QuestSeqId.seq1","quests":[{"id":"QuestId.q1","status":"QuestStatus.inactive","children":[{"id":"QuestId.q2","status":"QuestStatus.activated"}]},{"id":"QuestId.q3","status":"QuestStatus.activated"}]}]');
+    ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
+    ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
+    ct.dispatch(QuestTriggerData(condition: QuestCondition.c3));
+    data = GuidanceSystem.exportJson();
+    expect(jsonEncode(data),
+        '[{"id":"QuestSeqId.seq1","quests":[{"id":"QuestId.q1","status":"QuestStatus.completed","children":[{"id":"QuestId.q2","status":"QuestStatus.completed"}]},{"id":"QuestId.q3","status":"QuestStatus.completed"}]}]');
   });
 }

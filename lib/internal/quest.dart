@@ -26,14 +26,19 @@ extension QuestStatusExtension on QuestStatus {
   }
 }
 
+/// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
 class QuestSequence with EventDispatcher<QuestSequence> {
-  final Object? id;
+  final Object id;
   final List<Quest> quests;
 
   int _pointer = 0;
 
-  QuestSequence({this.id, required this.quests}) {
-    if (id != null) GuidanceSystem.seqCache[id!] = this;
+  // factory QuestSequence.fromJson(Map<String, dynamic> json) {
+  //   return QuestSequence(id: id, quests: quests);
+  // }
+
+  QuestSequence({required this.id, required this.quests}) {
+    GuidanceSystem.seqCache[id] = this;
 
     for (var i = 0, len = quests.length; i < len; i++) {
       GuidanceSystem.questCache[quests[i].id] = quests[i];
@@ -70,6 +75,13 @@ class QuestSequence with EventDispatcher<QuestSequence> {
     if (_pointer >= quests.length) return QuestStatus.completed;
     return QuestStatus.activated;
   }
+
+  Map<String, dynamic> exportJson() {
+    return {
+      "id": id.toString(),
+      "quests": quests.map((e) => e.exportJson()).toList(),
+    };
+  }
 }
 
 class Quest with EventDispatcher<Quest> {
@@ -77,7 +89,6 @@ class Quest with EventDispatcher<Quest> {
 
   QuestStatus status = QuestStatus.inactive;
 
-  Quest? parent;
   Quest? next;
 
   // Object data; // maybe used to store data that onTrigger produce
@@ -101,12 +112,6 @@ class Quest with EventDispatcher<Quest> {
         triggerChecker.customChecker!
             .call(QuestTriggerData(condition: Object()))) {
       status = QuestStatus.activated;
-    }
-
-    if (children != null) {
-      for (var element in children!) {
-        element.parent = this;
-      }
     }
   }
 
@@ -236,5 +241,16 @@ class Quest with EventDispatcher<Quest> {
     }
 
     if (shouldDispatch) dispatch(this);
+  }
+
+  Map<String, dynamic> exportJson() {
+    final Map<String, dynamic> json = {
+      "id": id.toString(),
+      "status": status.toString(),
+    };
+    if (children != null) {
+      json["children"] = children!.map((c) => c.exportJson()).toList();
+    }
+    return json;
   }
 }
