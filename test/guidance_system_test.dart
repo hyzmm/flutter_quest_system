@@ -16,19 +16,21 @@ enum QuestId {
 }
 
 main() {
-  late GuidanceSystem gs;
   late CustomTrigger ct;
 
-  setUpAll(() {});
+  setUpAll(() {
+    ct = CustomTrigger.instance;
+    GuidanceSystem.addTrigger(ct);
+  });
 
   setUp(() {
-    gs = GuidanceSystem.instance = GuidanceSystem();
-    ct = CustomTrigger.instance = CustomTrigger();
-    gs.addTrigger(ct);
+    GuidanceSystem.instance.sequences.clear();
+    GuidanceSystem.questCache.clear();
+    GuidanceSystem.seqCache.clear();
   });
 
   test("single task queue", () {
-    gs.addSequence(QuestSequence(quests: [
+    GuidanceSystem.addSequence(QuestSequence(quests: [
       Quest(
         id: QuestId.q1,
         triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -40,7 +42,7 @@ main() {
         completeChecker: QuestChecker(condition: QuestCondition.c2),
       )
     ]));
-    gs.addSequence(QuestSequence(quests: [
+    GuidanceSystem.addSequence(QuestSequence(quests: [
       Quest(
         id: QuestId.q3,
         triggerChecker: QuestChecker(condition: QuestCondition.c1),
@@ -48,8 +50,8 @@ main() {
       )
     ]));
 
-    final q0 = gs.getQuest(QuestId.q1)!;
-    final q1 = gs.getQuest(QuestId.q3)!;
+    final q0 = GuidanceSystem.getQuest(QuestId.q1)!;
+    final q1 = GuidanceSystem.getQuest(QuestId.q3)!;
 
     expect(q0.status, QuestStatus.inactive);
     expect(q1.status, QuestStatus.inactive);
@@ -67,7 +69,7 @@ main() {
   });
 
   test("auto active sub-quests, and manually complete parent quest", () {
-    gs.addSequence(
+    GuidanceSystem.addSequence(
       QuestSequence(quests: [
         Quest(
             id: QuestId.q4,
@@ -86,7 +88,7 @@ main() {
       ]),
     );
 
-    final q = gs.questPaths[0][0];
+    final q = GuidanceSystem.instance.sequences[0][0];
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     expect(q.status, QuestStatus.activated);
@@ -115,7 +117,7 @@ main() {
   });
 
   test("auto active sub-quests, and auto complete parent quest", () {
-    gs.questPaths.add(
+    GuidanceSystem.instance.sequences.add(
       QuestSequence(quests: [
         Quest.completeByChildren(
             id: QuestId.q1,
@@ -133,7 +135,7 @@ main() {
       ]),
     );
 
-    final q = gs.questPaths[0];
+    final q = GuidanceSystem.instance.sequences[0];
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));

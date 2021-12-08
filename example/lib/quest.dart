@@ -24,36 +24,35 @@ extension Quests on QuestId {
 }
 
 initQuests() {
-  GuidanceSystem.instance
-    ..addSequence(QuestSequence(id: Object(), quests: [
-      Quest.completeByChildren(
-          id: QuestId.q1,
+  GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+    Quest.completeByChildren(
+        id: QuestId.q1,
+        triggerChecker: QuestChecker.autoActivate(),
+        children: [
+          Quest.activatedByParent(
+              id: QuestId.q2,
+              completeChecker: QuestChecker(
+                  condition: const RouteCondition(
+                      routeName: routeQ1, isRemove: true))),
+          Quest.activatedByParent(
+              id: QuestId.q3,
+              completeChecker: QuestChecker(condition: QuestCondition.c3)),
+        ])
+  ]));
+  GuidanceSystem.addSequence(
+    QuestSequence(id: QuestId.seq2, quests: [
+      Quest(
+          id: QuestId.q4,
           triggerChecker: QuestChecker.autoActivate(),
-          children: [
-            Quest.activatedByParent(
-                id: QuestId.q2,
-                completeChecker: QuestChecker(
-                    condition: const RouteCondition(
-                        routeName: routeQ1, isRemove: true))),
-            Quest.activatedByParent(
-                id: QuestId.q3,
-                completeChecker: QuestChecker(condition: QuestCondition.c3)),
-          ])
-    ]))
-    ..addSequence(
-      QuestSequence(id: QuestId.seq2, quests: [
-        Quest(
-            id: QuestId.q4,
-            triggerChecker: QuestChecker.autoActivate(),
-            completeChecker: QuestChecker(
-                condition:
-                    const RouteCondition(routeName: routeQ2, isRemove: true))),
-        Quest(
-            id: QuestId.q5,
-            triggerChecker: QuestChecker.autoActivate(),
-            completeChecker: QuestChecker(
-                condition:
-                    const RouteCondition(routeName: routeQ2, isRemove: true)))
-      ]),
-    );
+          completeChecker: QuestChecker(
+              condition:
+                  const RouteCondition(routeName: routeQ2, isRemove: true))),
+      Quest(
+          id: QuestId.q5,
+          triggerChecker: QuestChecker.autoActivate(),
+          completeChecker: QuestChecker(
+              condition:
+                  const RouteCondition(routeName: routeQ2, isRemove: true)))
+    ]),
+  );
 }

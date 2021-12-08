@@ -9,8 +9,8 @@ const routeQ2 = "/routeQ2";
 
 void main() {
   // First step: add quest triggers
-  GuidanceSystem.instance.addTrigger(RouteTrigger.instance);
-  GuidanceSystem.instance.addTrigger(CustomTrigger.instance);
+  GuidanceSystem.addTrigger(RouteTrigger.instance);
+  GuidanceSystem.addTrigger(CustomTrigger.instance);
 
   // Second step: add quest to guidance system
   initQuests();

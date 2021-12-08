@@ -26,11 +26,9 @@ class _QuestBuilderState extends State<QuestBuilder> {
 
   @override
   void initState() {
-    quest = GuidanceSystem.instance.getQuest(widget.questId);
+    quest = GuidanceSystem.getQuest(widget.questId);
     _sub = quest?.on((q) {
-      setState(() {
-
-      });
+      setState(() {});
     });
     super.initState();
   }
