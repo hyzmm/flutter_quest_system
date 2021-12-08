@@ -13,12 +13,12 @@ class GuidanceSystem {
 
   @visibleForTesting
   @protected
-  final List<QuestSequence> sequences = [];
+  late final List<QuestSequence> sequences;
 
   final List<QuestTrigger> _triggers = [];
 
-  static void addSequence(QuestSequence quest) {
-    instance.sequences.add(quest);
+  static void init(List<QuestSequence> quests) {
+    instance.sequences = quests;
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];
@@ -49,7 +49,7 @@ class GuidanceSystem {
   static List<Map<String, dynamic>> exportJson() =>
       instance.sequences.map((e) => e.exportJson()).toList();
 
-  // void importJson(List<Map<String, dynamic>> json) {
-  //   sequences.addAll(json.map((e) => QuestSequence.fromJson(e)).toList());
-  // }
+// void importJson(List<Map<String, dynamic>> json) {
+//   sequences.addAll(json.map((e) => QuestSequence.fromJson(e)).toList());
+// }
 }

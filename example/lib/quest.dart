@@ -24,22 +24,22 @@ extension Quests on QuestId {
 }
 
 initQuests() {
-  GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
-    Quest.completeByChildren(
-        id: QuestId.q1,
-        triggerChecker: QuestChecker.autoActivate(),
-        children: [
-          Quest.activatedByParent(
-              id: QuestId.q2,
-              completeChecker: QuestChecker(
-                  condition: const RouteCondition(
-                      routeName: routeQ1, isRemove: true))),
-          Quest.activatedByParent(
-              id: QuestId.q3,
-              completeChecker: QuestChecker(condition: QuestCondition.c3)),
-        ])
-  ]));
-  GuidanceSystem.addSequence(
+  GuidanceSystem.init([
+    QuestSequence(id: Object(), quests: [
+      Quest.completeByChildren(
+          id: QuestId.q1,
+          triggerChecker: QuestChecker.autoActivate(),
+          children: [
+            Quest.activatedByParent(
+                id: QuestId.q2,
+                completeChecker: QuestChecker(
+                    condition: const RouteCondition(
+                        routeName: routeQ1, isRemove: true))),
+            Quest.activatedByParent(
+                id: QuestId.q3,
+                completeChecker: QuestChecker(condition: QuestCondition.c3)),
+          ])
+    ]),
     QuestSequence(id: QuestId.seq2, quests: [
       Quest(
           id: QuestId.q4,
@@ -53,6 +53,6 @@ initQuests() {
           completeChecker: QuestChecker(
               condition:
                   const RouteCondition(routeName: routeQ2, isRemove: true)))
-    ]),
-  );
+    ])
+  ]);
 }

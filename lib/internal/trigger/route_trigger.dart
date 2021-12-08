@@ -14,6 +14,11 @@ class RouteCondition {
     }
     return false;
   }
+
+  @override
+  // ignore: unnecessary_overrides
+  int get hashCode => super.hashCode;
+
 }
 
 class RouteTrigger extends QuestTrigger with NavigatorObserver {
