@@ -58,6 +58,7 @@ main() {
     ]));
 
     final q0 = GuidanceSystem.getQuest(QuestId.q1)!;
+    final q2 = GuidanceSystem.getQuest(QuestId.q2)!;
     final q1 = GuidanceSystem.getQuest(QuestId.q3)!;
 
     expect(q0.status, QuestStatus.inactive);
@@ -70,9 +71,9 @@ main() {
     expect(q1.status, QuestStatus.completed);
 
     // quest checker should not effect the inactive quests.
-    expect(q0.next!.status, QuestStatus.inactive);
-    expect(q0.next!.status, QuestStatus.inactive);
-    expect(q0.next!.status, QuestStatus.inactive);
+    expect(q2.status, QuestStatus.inactive);
+    expect(q2.status, QuestStatus.inactive);
+    expect(q2.status, QuestStatus.inactive);
   });
 
   test("auto active sub-quests, and manually complete parent quest", () {

@@ -43,8 +43,6 @@ class QuestSequence with EventDispatcher<QuestSequence> {
     for (var i = 0, len = quests.length; i < len; i++) {
       GuidanceSystem.questCache[quests[i].id] = quests[i];
 
-      if (i + 1 < len) quests[i].next = quests[i + 1];
-
       quests[i].children?.forEach((e) {
         GuidanceSystem.questCache[e.id] = e;
       });
@@ -88,8 +86,6 @@ class Quest with EventDispatcher<Quest> {
   Object id;
 
   QuestStatus status = QuestStatus.inactive;
-
-  Quest? next;
 
   // Object data; // maybe used to store data that onTrigger produce
 
