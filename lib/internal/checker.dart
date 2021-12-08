@@ -16,4 +16,12 @@ class QuestChecker {
   factory QuestChecker.autoActivate() {
     return QuestChecker(condition: Object(), customChecker: (_) => true);
   }
+
+  bool check(QuestTriggerData data) {
+    if (customChecker != null) {
+      return customChecker!.call(data);
+    } else {
+      return condition == data.condition;
+    }
+  }
 }

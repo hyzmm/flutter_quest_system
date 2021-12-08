@@ -24,11 +24,12 @@ extension Quests on QuestId {
 }
 
 initQuests() {
-  GuidanceSystem.init([
+  GuidanceSystem.init(QuestRoot([
     QuestSequence(id: Object(), quests: [
-      Quest.completeByChildren(
+      QuestGroup(
           id: QuestId.q1,
           triggerChecker: QuestChecker.autoActivate(),
+          completeChecker: QuestChecker.autoActivate(),
           children: [
             Quest.activatedByParent(
                 id: QuestId.q2,
@@ -54,5 +55,5 @@ initQuests() {
               condition:
                   const RouteCondition(routeName: routeQ2, isRemove: true)))
     ])
-  ]);
+  ]));
 }

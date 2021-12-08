@@ -13,17 +13,17 @@ class GuidanceSystem {
 
   @visibleForTesting
   @protected
-  late final List<QuestSequence> sequences;
+  List<QuestSequence> sequences = [];
 
   final List<QuestTrigger> _triggers = [];
 
-  static void init(List<QuestSequence> quests) {
-    instance.sequences = quests;
+  static void init(QuestRoot quests) {
+    instance.sequences = quests.quests;
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];
 
-  static Quest? getQuest(Object id) => questCache[id];
+  static T? getQuest<T extends Quest>(Object id) => questCache[id] as T;
 
   static void addTrigger(QuestTrigger trigger) {
     if (trigger.isDestroyed()) {
@@ -45,11 +45,4 @@ class GuidanceSystem {
       quest.check(data);
     }
   }
-
-  static List<Map<String, dynamic>> exportJson() =>
-      instance.sequences.map((e) => e.exportJson()).toList();
-
-// void importJson(List<Map<String, dynamic>> json) {
-//   sequences.addAll(json.map((e) => QuestSequence.fromJson(e)).toList());
-// }
 }

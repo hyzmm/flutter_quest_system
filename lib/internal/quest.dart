@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:guidance_system/guidance_system.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
+import 'package:guidance_system/internal/visitor/quest_node_visitor.dart';
 
 import 'checker.dart';
 import 'event_dispatcher.dart';
@@ -26,8 +27,27 @@ extension QuestStatusExtension on QuestStatus {
   }
 }
 
+abstract class QuestNode {
+  void accept(QuestNodeVisitor visitor);
+}
+
+class QuestRoot implements QuestNode {
+  List<QuestSequence> quests;
+
+  QuestRoot(this.quests);
+
+  @override
+  void accept(QuestNodeVisitor visitor) {
+    visitor.visitQuestRoot(this);
+
+    for (var q in quests) {
+      q.accept(visitor);
+    }
+  }
+}
+
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
-class QuestSequence with EventDispatcher<QuestSequence> {
+class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   final Object id;
   final List<Quest> quests;
 
@@ -43,9 +63,11 @@ class QuestSequence with EventDispatcher<QuestSequence> {
     for (var i = 0, len = quests.length; i < len; i++) {
       GuidanceSystem.questCache[quests[i].id] = quests[i];
 
-      quests[i].children?.forEach((e) {
-        GuidanceSystem.questCache[e.id] = e;
-      });
+      if (quests[i] is QuestGroup) {
+        for (var e in (quests[i] as QuestGroup).children) {
+          GuidanceSystem.questCache[e.id] = e;
+        }
+      }
     }
   }
 
@@ -74,22 +96,27 @@ class QuestSequence with EventDispatcher<QuestSequence> {
     return QuestStatus.activated;
   }
 
-  Map<String, dynamic> exportJson() {
-    return {
-      "id": id.toString(),
-      "quests": quests.map((e) => e.exportJson()).toList(),
-    };
+  // Map<String, dynamic> exportJson() {
+  //   return {
+  //     "id": id.toString(),
+  //     "quests": quests.map((e) => e.exportJson()).toList(),
+  //   };
+  // }
+
+  @override
+  void accept(QuestNodeVisitor visitor) {
+    visitor.visitQuestSequence(this);
+    for (var e in quests) {
+      e.accept(visitor);
+    }
   }
 }
 
-class Quest with EventDispatcher<Quest> {
+class Quest with EventDispatcher<Quest> implements QuestNode {
   Object id;
 
   QuestStatus status = QuestStatus.inactive;
 
-  // Object data; // maybe used to store data that onTrigger produce
-
-  List<Quest>? children;
   QuestChecker triggerChecker;
 
   QuestChecker completeChecker;
@@ -100,7 +127,6 @@ class Quest with EventDispatcher<Quest> {
     required this.id,
     required this.triggerChecker,
     required this.completeChecker,
-    this.children,
     this.uiKey,
   }) {
     // Maybe this quest is auto activated.
@@ -109,24 +135,6 @@ class Quest with EventDispatcher<Quest> {
             .call(QuestTriggerData(condition: Object()))) {
       status = QuestStatus.activated;
     }
-  }
-
-  /// 创建一个父任务，当子任务全部完成时，此任务会自动完成
-  /// 通常作为任务组的父任务出现
-  /// 它的检查器始终返回 true，一旦被检查就会激活
-  factory Quest.completeByChildren({
-    required id,
-    required triggerChecker,
-    required List<Quest> children,
-    Key? uiKey,
-  }) {
-    return Quest(
-      id: id,
-      triggerChecker: triggerChecker,
-      completeChecker: QuestChecker.autoActivate(),
-      children: children,
-      uiKey: uiKey,
-    );
   }
 
   /// 创建一个子任务，当父任务激活时，此任务会自动激活
@@ -145,38 +153,6 @@ class Quest with EventDispatcher<Quest> {
     );
   }
 
-  int get numCompletedChildQuests {
-    if (children == null || children!.isEmpty) {
-      return status == QuestStatus.completed ? 1 : 0;
-    }
-
-    // [progressInPercent] equals it's children complete percentage.
-    var numFinished = 0;
-    for (final e in children!) {
-      if (e.status == QuestStatus.completed) numFinished++;
-    }
-    return numFinished;
-  }
-
-  int get numChildQuests {
-    return children?.length ?? 0;
-  }
-
-  /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
-  /// 例如，三个子任务完成了一个，完成率为 1/3
-  double get progressInPercent {
-    // return 1 if the quest has completed itself.
-    if (status == QuestStatus.completed) return 1;
-
-    // check self's _status if no children
-    if (children == null || children!.isEmpty) {
-      return status == QuestStatus.completed ? 1 : 0;
-    }
-
-    // [progressInPercent] equals it's children complete percentage.
-    return numCompletedChildQuests / children!.length;
-  }
-
   onTrigger(Key uiKey) {}
 
   onProgress(double progress) {}
@@ -184,16 +160,61 @@ class Quest with EventDispatcher<Quest> {
   onFinish() {}
 
   /// 检查任务是否激活或者完成
-  /// 此方法会递归调用自身，完成子任务检查
   void check(QuestTriggerData data) {
-    _check(QuestChecker checker) {
-      if (checker.customChecker != null) {
-        return checker.customChecker!.call(data);
-      } else {
-        return checker.condition == data.condition;
-      }
+    switch (status) {
+      case QuestStatus.inactive:
+        if (triggerChecker.check(data)) {
+          status = QuestStatus.activated;
+          dispatch(this);
+        }
+        break;
+      case QuestStatus.activated:
+        if (completeChecker.check(data)) {
+          status = QuestStatus.completed;
+          dispatch(this);
+          log("Complete quest $id", name: "GUIDANCE");
+        }
+        break;
+      case QuestStatus.completed:
+        break;
     }
+  }
 
+  // Map<String, dynamic> exportJson() {
+  //   final Map<String, dynamic> json = {
+  //     "id": id.toString(),
+  //     "status": status.toString(),
+  //   };
+  //   if (children != null) {
+  //     json["children"] = children!.map((c) => c.exportJson()).toList();
+  //   }
+  //   return json;
+  // }
+
+  @override
+  void accept(QuestNodeVisitor visitor) {
+    visitor.visitQuest(this);
+  }
+}
+
+class QuestGroup extends Quest {
+  List<Quest> children;
+
+  QuestGroup({
+    required Object id,
+    required QuestChecker triggerChecker,
+    required QuestChecker completeChecker,
+    required this.children,
+    Key? uiKey,
+  }) : super(
+            id: id,
+            triggerChecker: triggerChecker,
+            completeChecker: completeChecker);
+
+  /// 检查任务是否激活或者完成
+  /// 此方法会递归调用自身，完成子任务检查
+  @override
+  void check(QuestTriggerData data) {
     // return true if sub quest's status changes
     bool _checkSubQuest(Quest q) {
       final oldStatus = q.status;
@@ -207,25 +228,25 @@ class Quest with EventDispatcher<Quest> {
 
     switch (status) {
       case QuestStatus.inactive:
-        if (_check(triggerChecker)) {
+        if (triggerChecker.check(data)) {
           status = QuestStatus.activated;
           // When a query be activated, its children will be activated too
-          children?.forEach((q) {
+          for (var q in children) {
             if (_checkSubQuest(q)) shouldDispatch = true;
-          });
+          }
           shouldDispatch = true;
         }
         break;
       case QuestStatus.activated:
         // if this quest is a group, it must complete all sub quests, then complete itself
         bool childrenCompleted = true;
-        if (children != null && children!.isNotEmpty) {
-          for (var q in children!) {
+        if (children.isNotEmpty) {
+          for (var q in children) {
             if (_checkSubQuest(q)) shouldDispatch = true;
             if (q.status != QuestStatus.completed) childrenCompleted = false;
           }
         }
-        if (childrenCompleted && _check(completeChecker)) {
+        if (childrenCompleted && completeChecker.check(data)) {
           status = QuestStatus.completed;
 
           shouldDispatch = true;
@@ -239,14 +260,24 @@ class Quest with EventDispatcher<Quest> {
     if (shouldDispatch) dispatch(this);
   }
 
-  Map<String, dynamic> exportJson() {
-    final Map<String, dynamic> json = {
-      "id": id.toString(),
-      "status": status.toString(),
-    };
-    if (children != null) {
-      json["children"] = children!.map((c) => c.exportJson()).toList();
-    }
-    return json;
+  /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
+  /// 例如，三个子任务完成了一个，完成率为 1/3
+  double get progressInPercent {
+    // return 1 if the quest has completed itself.
+    if (status == QuestStatus.completed) return 1;
+
+    // [progressInPercent] equals it's children complete percentage.
+    return numCompletedChildQuests / children.length;
   }
+
+  int get numCompletedChildQuests {
+    // [progressInPercent] equals it's children complete percentage.
+    var numFinished = 0;
+    for (final e in children) {
+      if (e.status == QuestStatus.completed) numFinished++;
+    }
+    return numFinished;
+  }
+
+  int get length => children.length;
 }

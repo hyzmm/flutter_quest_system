@@ -85,11 +85,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Text("Quest 1",
                       style: TextStyle(fontWeight: FontWeight.w500)),
                   // Third step: listen to quest status change
-                  QuestBuilder(
+                  QuestBuilder<QuestGroup>(
                       questId: QuestId.q1,
-                      builder: (quest) {
+                      builder: (QuestGroup? quest) {
                         return Text(
-                            "${quest!.numCompletedChildQuests}/${quest.numChildQuests} - ${quest.status.description}");
+                            "${quest!.numCompletedChildQuests}/${quest.length} - ${quest.status.description}");
                       })
                 ],
               ),
@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [QuestId.q2, QuestId.q3]
-                      .map((qId) => QuestBuilder(
+                      .map((qId) => QuestBuilder<Quest>(
                           questId: qId,
                           builder: (quest) {
                             return TextButton(

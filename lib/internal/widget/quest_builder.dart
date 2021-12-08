@@ -5,10 +5,10 @@ import 'package:guidance_system/internal/guidance_system.dart';
 
 import '../quest.dart';
 
-class QuestBuilder extends StatefulWidget {
+class QuestBuilder<T extends Quest> extends StatefulWidget {
   final Object questId;
 
-  final Function(Quest?) builder;
+  final Widget Function(T?) builder;
 
   const QuestBuilder({
     Key? key,
@@ -17,16 +17,16 @@ class QuestBuilder extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _QuestBuilderState createState() => _QuestBuilderState();
+  _QuestBuilderState createState() => _QuestBuilderState<T>();
 }
 
-class _QuestBuilderState extends State<QuestBuilder> {
-  Quest? quest;
+class _QuestBuilderState<T extends Quest> extends State<QuestBuilder<T>> {
+  T? quest;
   StreamSubscription? _sub;
 
   @override
   void initState() {
-    quest = GuidanceSystem.getQuest(widget.questId);
+    quest = GuidanceSystem.getQuest<T>(widget.questId);
     _sub = quest?.on((q) {
       setState(() {});
     });
