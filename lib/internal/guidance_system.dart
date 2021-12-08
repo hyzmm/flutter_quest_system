@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:guidance_system/internal/quest.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
 
@@ -11,14 +10,12 @@ class GuidanceSystem {
 
   GuidanceSystem._();
 
-  @visibleForTesting
-  @protected
-  List<QuestSequence> sequences = [];
+  static QuestRoot root = QuestRoot([]);
 
   final List<QuestTrigger> _triggers = [];
 
-  static void init(QuestRoot quests) {
-    instance.sequences = quests.quests;
+  static void init(QuestRoot questRoot) {
+    root = questRoot;
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];
@@ -40,8 +37,8 @@ class GuidanceSystem {
   }
 
   static void _onTrigger(QuestTriggerData data) {
-    for (var i = instance.sequences.length - 1; i >= 0; i--) {
-      final quest = instance.sequences[i];
+    for (var i = root.length - 1; i >= 0; i--) {
+      final quest = root[i];
       quest.check(data);
     }
   }

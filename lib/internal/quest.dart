@@ -36,14 +36,16 @@ class QuestRoot implements QuestNode {
 
   QuestRoot(this.quests);
 
-  @override
-  void accept(QuestNodeVisitor visitor) {
-    visitor.visitQuestRoot(this);
+  get length => quests.length;
 
-    for (var q in quests) {
-      q.accept(visitor);
-    }
+  QuestSequence operator [](int index) => quests[index];
+
+  @override
+  accept(QuestNodeVisitor visitor) {
+    return visitor.visitQuestRoot(this);
   }
+
+  void clear() => quests.clear();
 }
 
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
@@ -104,11 +106,8 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   // }
 
   @override
-  void accept(QuestNodeVisitor visitor) {
-    visitor.visitQuestSequence(this);
-    for (var e in quests) {
-      e.accept(visitor);
-    }
+  dynamic accept(QuestNodeVisitor visitor) {
+    return visitor.visitQuestSequence(this);
   }
 }
 
@@ -192,8 +191,8 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   // }
 
   @override
-  void accept(QuestNodeVisitor visitor) {
-    visitor.visitQuest(this);
+  dynamic accept(QuestNodeVisitor visitor) {
+    return visitor.visitQuest(this);
   }
 }
 
@@ -280,4 +279,9 @@ class QuestGroup extends Quest {
   }
 
   int get length => children.length;
+
+  @override
+  accept(QuestNodeVisitor visitor) {
+    return visitor.visitQuestGroup(this);
+  }
 }

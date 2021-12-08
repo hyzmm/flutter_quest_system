@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guidance_system/internal/checker.dart';
 import 'package:guidance_system/internal/guidance_system.dart';
 import 'package:guidance_system/internal/quest.dart';
 import 'package:guidance_system/internal/trigger/custom_trigger.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
+import 'package:guidance_system/internal/visitor/json_export_visitor.dart';
 
 enum QuestCondition { c1, c2, c3, c4, c5, c6 }
 
@@ -29,7 +32,7 @@ main() {
   });
 
   setUp(() {
-    GuidanceSystem.instance.sequences.clear();
+    GuidanceSystem.root.clear();
     GuidanceSystem.questCache.clear();
     GuidanceSystem.seqCache.clear();
   });
@@ -98,7 +101,7 @@ main() {
       ]),
     );
 
-    final q = GuidanceSystem.instance.sequences[0][0] as QuestGroup;
+    final q = GuidanceSystem.getQuest<QuestGroup>(QuestId.q4)!;
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     expect(q.status, QuestStatus.activated);
@@ -148,7 +151,7 @@ main() {
       ]),
     );
 
-    final q = GuidanceSystem.instance.sequences[0];
+    final q = GuidanceSystem.root[0];
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
@@ -186,9 +189,10 @@ main() {
         ])
       ]),
     );
-    // var data = GuidanceSystem.exportJson();
-    // expect(jsonEncode(data),
-    //     '[{"id":"QuestSeqId.seq1","quests":[{"id":"QuestId.q1","status":"QuestStatus.inactive","children":[{"id":"QuestId.q2","status":"QuestStatus.activated"}]},{"id":"QuestId.q3","status":"QuestStatus.activated"}]}]');
+    final exporter = JsonExportVisitor();
+    GuidanceSystem.root.accept(exporter);
+    expect(jsonEncode(exporter.data),
+        '[{"id":"QuestSeqId.seq1","quests":[{"id":"QuestId.q1","status":"QuestStatus.inactive","children":[{"id":"QuestId.q2","status":"QuestStatus.activated"}]},{"id":"QuestId.q3","status":"QuestStatus.activated"}]}]');
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c3));
