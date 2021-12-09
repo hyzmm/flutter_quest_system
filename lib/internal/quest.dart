@@ -146,7 +146,7 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   }) {
     return Quest(
       id: id,
-      triggerChecker: QuestChecker.autoActivate(),
+      triggerChecker: QuestChecker.automate(),
       completeChecker: completeChecker,
       uiKey: uiKey,
     );
@@ -266,10 +266,10 @@ class QuestGroup extends Quest {
     if (status == QuestStatus.completed) return 1;
 
     // [progressInPercent] equals it's children complete percentage.
-    return numCompletedChildQuests / children.length;
+    return progress / children.length;
   }
 
-  int get numCompletedChildQuests {
+  int get progress {
     // [progressInPercent] equals it's children complete percentage.
     var numFinished = 0;
     for (final e in children) {
@@ -284,4 +284,6 @@ class QuestGroup extends Quest {
   accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestGroup(this);
   }
+
+  Quest operator [](int i) => children[i];
 }

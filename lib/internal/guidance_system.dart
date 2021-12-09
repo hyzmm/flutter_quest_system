@@ -18,6 +18,10 @@ class GuidanceSystem {
     root = questRoot;
   }
 
+  static void addSequence(QuestSequence seq) {
+    root.quests.add(seq);
+  }
+
   static QuestSequence? getSequence(Object id) => seqCache[id];
 
   static T? getQuest<T extends Quest>(Object id) => questCache[id] as T;

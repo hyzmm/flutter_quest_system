@@ -42,20 +42,20 @@ main() {
       QuestSequence(id: Object(), quests: [
         Quest(
           id: QuestId.q1,
-          triggerChecker: QuestChecker(condition: QuestCondition.c1),
-          completeChecker: QuestChecker(condition: QuestCondition.c2),
+          triggerChecker: QuestChecker.condition(QuestCondition.c1),
+          completeChecker: QuestChecker.condition(QuestCondition.c2),
         ),
         Quest(
           id: QuestId.q2,
-          triggerChecker: QuestChecker(condition: QuestCondition.c1),
-          completeChecker: QuestChecker(condition: QuestCondition.c2),
+          triggerChecker: QuestChecker.condition(QuestCondition.c1),
+          completeChecker: QuestChecker.condition(QuestCondition.c2),
         )
       ]),
       QuestSequence(id: Object(), quests: [
         Quest(
           id: QuestId.q3,
-          triggerChecker: QuestChecker(condition: QuestCondition.c1),
-          completeChecker: QuestChecker(condition: QuestCondition.c2),
+          triggerChecker: QuestChecker.condition(QuestCondition.c1),
+          completeChecker: QuestChecker.condition(QuestCondition.c2),
         )
       ]),
     ]));
@@ -85,16 +85,16 @@ main() {
         QuestSequence(id: Object(), quests: [
           QuestGroup(
               id: QuestId.q4,
-              triggerChecker: QuestChecker(condition: QuestCondition.c1),
-              completeChecker: QuestChecker(condition: QuestCondition.c2),
+              triggerChecker: QuestChecker.condition(QuestCondition.c1),
+              completeChecker: QuestChecker.condition(QuestCondition.c2),
               children: [
                 Quest.activatedByParent(
                   id: QuestId.q5,
-                  completeChecker: QuestChecker(condition: QuestCondition.c3),
+                  completeChecker: QuestChecker.condition(QuestCondition.c3),
                 ),
                 Quest.activatedByParent(
                   id: QuestId.q6,
-                  completeChecker: QuestChecker(condition: QuestCondition.c4),
+                  completeChecker: QuestChecker.condition(QuestCondition.c4),
                 ),
               ])
         ])
@@ -135,16 +135,16 @@ main() {
         QuestSequence(id: Object(), quests: [
           QuestGroup(
               id: QuestId.q1,
-              triggerChecker: QuestChecker(condition: QuestCondition.c1),
-              completeChecker: QuestChecker.autoActivate(),
+              triggerChecker: QuestChecker.condition(QuestCondition.c1),
+              completeChecker: QuestChecker.automate(),
               children: [
                 Quest.activatedByParent(
                   id: QuestId.q5,
-                  completeChecker: QuestChecker(condition: QuestCondition.c3),
+                  completeChecker: QuestChecker.condition(QuestCondition.c3),
                 ),
                 Quest.activatedByParent(
                   id: QuestId.q6,
-                  completeChecker: QuestChecker(condition: QuestCondition.c4),
+                  completeChecker: QuestChecker.condition(QuestCondition.c4),
                 ),
               ])
         ])
@@ -173,18 +173,18 @@ main() {
         QuestSequence(id: QuestSeqId.seq1, quests: [
           QuestGroup(
               id: QuestId.q1,
-              triggerChecker: QuestChecker(condition: QuestCondition.c1),
-              completeChecker: QuestChecker.autoActivate(),
+              triggerChecker: QuestChecker.condition(QuestCondition.c1),
+              completeChecker: QuestChecker.automate(),
               children: [
                 Quest.activatedByParent(
                   id: QuestId.q2,
-                  completeChecker: QuestChecker(condition: QuestCondition.c2),
+                  completeChecker: QuestChecker.condition(QuestCondition.c2),
                 ),
               ]),
           Quest(
             id: QuestId.q3,
-            triggerChecker: QuestChecker.autoActivate(),
-            completeChecker: QuestChecker(condition: QuestCondition.c3),
+            triggerChecker: QuestChecker.automate(),
+            completeChecker: QuestChecker.condition(QuestCondition.c3),
           ),
         ])
       ]),
