@@ -11,13 +11,13 @@ class QuestBuilder<T extends Quest> extends StatefulWidget {
 
   final Widget Function(T?) builder;
 
-  const QuestBuilder.id(this.questId, {Key? key, required this.builder})
+  QuestBuilder.id(this.questId, {Key? key, required this.builder})
       : quest = null,
-        super(key: key);
+        super(key: ValueKey(questId));
 
-  const QuestBuilder.quest(this.quest, {Key? key, required this.builder})
+  QuestBuilder.quest(this.quest, {required this.builder})
       : questId = null,
-        super(key: key);
+        super(key: ValueKey(quest!.id));
 
   @override
   _QuestBuilderState createState() => _QuestBuilderState<T>();

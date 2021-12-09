@@ -12,11 +12,10 @@ class QuestSequenceBuilder extends StatefulWidget {
 
   final Function(QuestSequence?) builder;
 
-  const QuestSequenceBuilder({
-    Key? key,
+  QuestSequenceBuilder({
     required this.questId,
     required this.builder,
-  }) : super(key: key);
+  }) : super(key: ValueKey(questId));
 
   @override
   _QuestSequenceBuilderState createState() => _QuestSequenceBuilderState();
