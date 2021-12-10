@@ -186,8 +186,16 @@ main() {
 
     final exporter = JsonExportVisitor();
     var data = GuidanceSystem.root.accept(exporter);
-    expect(jsonEncode(data),
-        '{"QuestSeqId.seq1":{"pointer":"QuestId.q1"},"QuestId.q1":{"status":0},"QuestId.q3":{"status":1},"QuestId.q4":{"pointer":"QuestId.q5"},"QuestId.q5":{"status":1}}');
+    expect(
+        jsonEncode(data),
+        jsonEncode({
+          "QuestSeqId.seq1": {"pointer": "QuestId.q1"},
+          "QuestId.q1": {"status": 0},
+          "QuestId.q2": {"status": 1},
+          "QuestId.q3": {"status": 1},
+          "QuestId.q4": {"pointer": "QuestId.q5"},
+          "QuestId.q5": {"status": 1}
+        }));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c3));
@@ -195,6 +203,7 @@ main() {
     final matcher = {
       "QuestSeqId.seq1": {"pointer": null},
       "QuestId.q1": {"status": 2},
+      "QuestId.q2": {"status": 2},
       "QuestId.q3": {"status": 2},
       "QuestId.q4": {"pointer": "QuestId.q5"},
       "QuestId.q5": {"status": 1}
@@ -230,6 +239,7 @@ main() {
     final matcher = {
       "QuestSeqId.seq1": {"pointer": null},
       "QuestId.q1": {"status": 2},
+      "QuestId.q2": {"status": 1},
       "QuestId.q3": {"status": 2},
       "QuestId.q4": {"pointer": "QuestId.q5"},
       "QuestId.q5": {"status": 1}

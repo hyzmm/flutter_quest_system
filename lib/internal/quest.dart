@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:guidance_system/guidance_system.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
@@ -84,18 +82,6 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
     return quests[index];
   }
 
-  void check(QuestTriggerData data) {
-    /// Quests completed
-    if (progress >= quests.length) return;
-
-    final quest = quests[progress];
-    quest.check(data);
-    if (quest.status == QuestStatus.completed) {
-      progress++;
-      dispatch(this);
-    }
-  }
-
   int get totalProgress => quests.length;
 
   QuestStatus get status {
@@ -154,38 +140,6 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   //
   // onFinish() {}
 
-  /// 检查任务是否激活或者完成
-  void check(QuestTriggerData data) {
-    switch (status) {
-      case QuestStatus.inactive:
-        if (triggerChecker.check(data)) {
-          status = QuestStatus.activated;
-          dispatch(this);
-        }
-        break;
-      case QuestStatus.activated:
-        if (completeChecker.check(data)) {
-          status = QuestStatus.completed;
-          dispatch(this);
-          log("Complete quest $id", name: "GUIDANCE");
-        }
-        break;
-      case QuestStatus.completed:
-        break;
-    }
-  }
-
-  // Map<String, dynamic> exportJson() {
-  //   final Map<String, dynamic> json = {
-  //     "id": id.toString(),
-  //     "status": status.toString(),
-  //   };
-  //   if (children != null) {
-  //     json["children"] = children!.map((c) => c.exportJson()).toList();
-  //   }
-  //   return json;
-  // }
-
   @override
   dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuest(this);
@@ -205,55 +159,6 @@ class QuestGroup extends Quest {
             id: id,
             triggerChecker: triggerChecker,
             completeChecker: completeChecker);
-
-  /// 检查任务是否激活或者完成
-  /// 此方法会递归调用自身，完成子任务检查
-  @override
-  void check(QuestTriggerData data) {
-    // return true if sub quest's status changes
-    bool _checkSubQuest(Quest q) {
-      final oldStatus = q.status;
-      q.check(data);
-      final newStatus = q.status;
-      return oldStatus != newStatus;
-    }
-
-    // Use a flag to trigger dispatch only once
-    bool shouldDispatch = false;
-
-    switch (status) {
-      case QuestStatus.inactive:
-        if (triggerChecker.check(data)) {
-          status = QuestStatus.activated;
-          // When a query be activated, its children will be activated too
-          for (var q in children) {
-            if (_checkSubQuest(q)) shouldDispatch = true;
-          }
-          shouldDispatch = true;
-        }
-        break;
-      case QuestStatus.activated:
-        // if this quest is a group, it must complete all sub quests, then complete itself
-        bool childrenCompleted = true;
-        if (children.isNotEmpty) {
-          for (var q in children) {
-            if (_checkSubQuest(q)) shouldDispatch = true;
-            if (q.status != QuestStatus.completed) childrenCompleted = false;
-          }
-        }
-        if (childrenCompleted && completeChecker.check(data)) {
-          status = QuestStatus.completed;
-
-          shouldDispatch = true;
-          log("Complete quest $id", name: "GUIDANCE");
-        }
-        break;
-      case QuestStatus.completed:
-        break;
-    }
-
-    if (shouldDispatch) dispatch(this);
-  }
 
   /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
   /// 例如，三个子任务完成了一个，完成率为 1/3

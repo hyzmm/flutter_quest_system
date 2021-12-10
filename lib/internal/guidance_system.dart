@@ -1,5 +1,6 @@
 import 'package:guidance_system/internal/quest.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
+import 'package:guidance_system/internal/visitor/quest_check_visitor.dart';
 
 class GuidanceSystem {
   static late GuidanceSystem instance = GuidanceSystem._();
@@ -37,9 +38,6 @@ class GuidanceSystem {
   }
 
   static void _onTrigger(QuestTriggerData data) {
-    for (var i = root.length - 1; i >= 0; i--) {
-      final quest = root[i];
-      quest.check(data);
-    }
+    root.accept(QuestCheckVisitor(data));
   }
 }

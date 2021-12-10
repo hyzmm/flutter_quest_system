@@ -33,7 +33,9 @@ class JsonImportVisitor extends QuestNodeVisitor {
   @override
   visitQuestGroup(QuestGroup questGroup) {
     visitQuest(questGroup);
-    questGroup.children.forEach((e) => e.accept(this));
+    for (var e in questGroup.children) {
+      e.accept(this);
+    }
   }
 
   @override
