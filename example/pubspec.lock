@@ -56,7 +56,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_lints:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_lints
       url: "https://pub.dartlang.org"
@@ -75,7 +75,7 @@ packages:
     source: hosted
     version: "4.5.1"
   guidance_system:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       path: ".."
       relative: true

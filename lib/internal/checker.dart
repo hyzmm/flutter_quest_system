@@ -9,11 +9,6 @@ class QuestChecker {
 
   QuestChecker.custom(Function(QuestTriggerData) func) : customChecker = func;
 
-  //
-  // factory QuestChecker.routeChecker(RouteCondition condition) {
-  //   return QuestChecker.condition(condition);
-  // }
-
   /// 自动激活或者完成
   factory QuestChecker.automate() {
     return QuestChecker.custom((_) => true);

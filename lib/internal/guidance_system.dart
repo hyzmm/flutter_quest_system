@@ -14,10 +14,6 @@ class GuidanceSystem {
 
   final List<QuestTrigger> _triggers = [];
 
-  static void init(QuestRoot questRoot) {
-    root = questRoot;
-  }
-
   static void addSequence(QuestSequence seq) {
     root.quests.add(seq);
   }

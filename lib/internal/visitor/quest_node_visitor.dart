@@ -1,7 +1,7 @@
 import 'package:guidance_system/internal/quest.dart';
 
 abstract class QuestNodeVisitor<T> {
-  void visitQuestRoot(QuestRoot questRoot);
+  T visitQuestRoot(QuestRoot questRoot);
 
   T visitQuest(Quest quest);
 

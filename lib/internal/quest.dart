@@ -41,7 +41,7 @@ class QuestRoot implements QuestNode {
   QuestSequence operator [](int index) => quests[index];
 
   @override
-  accept(QuestNodeVisitor visitor) {
+  dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestRoot(this);
   }
 
@@ -53,7 +53,7 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   final Object id;
   final List<Quest> quests;
 
-  int _pointer = 0;
+  int progress = 0;
 
   // factory QuestSequence.fromJson(Map<String, dynamic> json) {
   //   return QuestSequence(id: id, quests: quests);
@@ -79,22 +79,20 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
 
   void check(QuestTriggerData data) {
     /// Quests completed
-    if (_pointer >= quests.length) return;
+    if (progress >= quests.length) return;
 
-    final quest = quests[_pointer];
+    final quest = quests[progress];
     quest.check(data);
     if (quest.status == QuestStatus.completed) {
-      _pointer++;
+      progress++;
       dispatch(this);
     }
   }
 
-  int get progress => _pointer;
-
   int get totalProgress => quests.length;
 
   QuestStatus get status {
-    if (_pointer >= quests.length) return QuestStatus.completed;
+    if (progress >= quests.length) return QuestStatus.completed;
     return QuestStatus.activated;
   }
 

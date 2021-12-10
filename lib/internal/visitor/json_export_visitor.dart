@@ -1,39 +1,42 @@
 import 'package:guidance_system/internal/quest.dart';
 import 'package:guidance_system/internal/visitor/quest_node_visitor.dart';
 
-class JsonExportVisitor extends QuestNodeVisitor<Map<String, dynamic>> {
-  late List<Map<String, dynamic>> data;
+class JsonExportVisitor extends QuestNodeVisitor {
+  final Map<String, Map<String, dynamic>> _result = {};
 
   @override
-  void visitQuestRoot(QuestRoot questRoot) {
-    data = [];
+  dynamic visitQuestRoot(QuestRoot questRoot) {
+    _result.clear();
     for (var e in questRoot.quests) {
-      data.add(e.accept(this));
+      e.accept(this);
+    }
+    return _result;
+  }
+
+  @override
+  visitQuestSequence(QuestSequence questSequence) {
+    _result[questSequence.id.toString()] = {
+      "pointer": questSequence.status == QuestStatus.completed
+          ? null
+          : questSequence[questSequence.progress].id.toString(),
+    };
+    for (var e in questSequence.quests) {
+      e.accept(this);
     }
   }
 
   @override
-  Map<String, dynamic> visitQuestSequence(QuestSequence questSequence) {
-    return {
-      "id": questSequence.id.toString(),
-      "quests": questSequence.quests.map((e) => e.accept(this)).toList(),
+  visitQuestGroup(QuestGroup questGroup) {
+    _result[questGroup.id.toString()] = {
+      "status": questGroup.status.index,
     };
+    questGroup.children.map((e) => e.accept(this));
   }
 
   @override
-  Map<String, dynamic> visitQuestGroup(QuestGroup questGroup) {
-    return {
-      "id": questGroup.id.toString(),
-      "status": questGroup.status.toString(),
-      "children": questGroup.children.map((e) => e.accept(this)).toList(),
-    };
-  }
-
-  @override
-  Map<String, dynamic> visitQuest(Quest quest) {
-    return {
-      "id": quest.id.toString(),
-      "status": quest.status.toString(),
+  visitQuest(Quest quest) {
+    _result[quest.id.toString()] = {
+      "status": quest.status.index,
     };
   }
 }
