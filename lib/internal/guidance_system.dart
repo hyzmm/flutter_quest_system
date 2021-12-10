@@ -15,7 +15,7 @@ class GuidanceSystem {
   final List<QuestTrigger> _triggers = [];
 
   static void addSequence(QuestSequence seq) {
-    root.quests.add(seq);
+    root.add(seq);
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];

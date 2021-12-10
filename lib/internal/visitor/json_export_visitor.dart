@@ -15,6 +15,9 @@ class JsonExportVisitor extends QuestNodeVisitor {
 
   @override
   visitQuestSequence(QuestSequence questSequence) {
+    assert(!questSequence.id.toString().startsWith("Instance of"),
+        "Custom id must override toString() to provide a unique identifier.");
+
     _result[questSequence.id.toString()] = {
       "pointer": questSequence.status == QuestStatus.completed
           ? null
@@ -27,14 +30,20 @@ class JsonExportVisitor extends QuestNodeVisitor {
 
   @override
   visitQuestGroup(QuestGroup questGroup) {
+    assert(!questGroup.id.toString().startsWith("Instance of"),
+        "Custom id must override toString() to provide a unique identifier.");
+
     _result[questGroup.id.toString()] = {
       "status": questGroup.status.index,
     };
-    questGroup.children.map((e) => e.accept(this));
+    questGroup.children.forEach((e) => e.accept(this));
   }
 
   @override
   visitQuest(Quest quest) {
+    assert(!quest.id.toString().startsWith("Instance of"),
+        "Custom id must override toString() to provide a unique identifier.");
+
     _result[quest.id.toString()] = {
       "status": quest.status.index,
     };

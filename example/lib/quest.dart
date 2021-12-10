@@ -30,11 +30,11 @@ initQuests() {
         triggerChecker: QuestChecker.automate(),
         completeChecker: QuestChecker.automate(),
         children: [
-          Quest.activatedByParent(
+          Quest.autoTrigger(
               id: QuestId.q2,
               completeChecker: QuestChecker.condition(
                   const RouteCondition(routeName: routeQ1, isRemove: true))),
-          Quest.activatedByParent(
+          Quest.autoTrigger(
               id: QuestId.q3,
               completeChecker: QuestChecker.condition(QuestCondition.c3)),
         ])

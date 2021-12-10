@@ -85,11 +85,11 @@ main() {
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
           completeChecker: QuestChecker.condition(QuestCondition.c2),
           children: [
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q5,
               completeChecker: QuestChecker.condition(QuestCondition.c3),
             ),
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q6,
               completeChecker: QuestChecker.condition(QuestCondition.c4),
             ),
@@ -131,11 +131,11 @@ main() {
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
           completeChecker: QuestChecker.automate(),
           children: [
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q5,
               completeChecker: QuestChecker.condition(QuestCondition.c3),
             ),
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q6,
               completeChecker: QuestChecker.condition(QuestCondition.c4),
             ),
@@ -165,7 +165,7 @@ main() {
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
           completeChecker: QuestChecker.automate(),
           children: [
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q2,
               completeChecker: QuestChecker.condition(QuestCondition.c2),
             ),
@@ -208,7 +208,7 @@ main() {
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
           completeChecker: QuestChecker.automate(),
           children: [
-            Quest.activatedByParent(
+            Quest.autoTrigger(
               id: QuestId.q2,
               completeChecker: QuestChecker.condition(QuestCondition.c2),
             ),

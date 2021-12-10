@@ -31,7 +31,7 @@ abstract class QuestNode {
   void accept(QuestNodeVisitor visitor);
 }
 
-class QuestRoot implements QuestNode {
+class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
   List<QuestSequence> quests;
 
   QuestRoot(this.quests);
@@ -45,6 +45,15 @@ class QuestRoot implements QuestNode {
     return visitor.visitQuestRoot(this);
   }
 
+  void add(QuestSequence sequence) {
+    quests.add(sequence);
+    sequence.on((_) => dispatch(this));
+  }
+
+  void addAll(Iterable<QuestSequence> sequences) {
+    sequences.forEach(add);
+  }
+
   void clear() => quests.clear();
 }
 
@@ -54,10 +63,6 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   final List<Quest> quests;
 
   int progress = 0;
-
-  // factory QuestSequence.fromJson(Map<String, dynamic> json) {
-  //   return QuestSequence(id: id, quests: quests);
-  // }
 
   QuestSequence({required this.id, required this.quests}) {
     GuidanceSystem.seqCache[id] = this;
@@ -70,6 +75,8 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
           GuidanceSystem.questCache[e.id] = e;
         }
       }
+
+      quests[i].on((_) => dispatch(this));
     }
   }
 
@@ -95,13 +102,6 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
     if (progress >= quests.length) return QuestStatus.completed;
     return QuestStatus.activated;
   }
-
-  // Map<String, dynamic> exportJson() {
-  //   return {
-  //     "id": id.toString(),
-  //     "quests": quests.map((e) => e.exportJson()).toList(),
-  //   };
-  // }
 
   @override
   dynamic accept(QuestNodeVisitor visitor) {
@@ -134,10 +134,8 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
     }
   }
 
-  /// 创建一个子任务，当父任务激活时，此任务会自动激活
-  /// 通常作为任务组的子任务出现
-  /// 它的检查器始终返回 true，一旦被检查就会激活
-  factory Quest.activatedByParent({
+  /// 创建一个自动激活的子任务
+  factory Quest.autoTrigger({
     required id,
     required completeChecker,
     Key? uiKey,
@@ -150,11 +148,11 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
     );
   }
 
-  onTrigger(Key uiKey) {}
-
-  onProgress(double progress) {}
-
-  onFinish() {}
+  // onTrigger(Key uiKey) {}
+  //
+  // onProgress(double progress) {}
+  //
+  // onFinish() {}
 
   /// 检查任务是否激活或者完成
   void check(QuestTriggerData data) {
