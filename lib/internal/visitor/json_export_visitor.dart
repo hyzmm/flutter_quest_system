@@ -36,7 +36,9 @@ class JsonExportVisitor extends QuestNodeVisitor {
     _result[questGroup.id.toString()] = {
       "status": questGroup.status.index,
     };
-    questGroup.children.forEach((e) => e.accept(this));
+    for (var e in questGroup.children) {
+      e.accept(this);
+    }
   }
 
   @override

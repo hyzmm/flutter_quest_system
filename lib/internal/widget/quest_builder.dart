@@ -11,7 +11,7 @@ class QuestBuilder<T extends Quest> extends StatefulWidget {
 
   final Widget Function(T?) builder;
 
-  QuestBuilder.id(this.questId, {Key? key, required this.builder})
+  QuestBuilder.id(this.questId, {required this.builder})
       : quest = null,
         super(key: ValueKey(questId));
 

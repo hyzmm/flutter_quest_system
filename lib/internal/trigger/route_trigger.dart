@@ -18,13 +18,10 @@ class RouteCondition {
   @override
   // ignore: unnecessary_overrides
   int get hashCode => super.hashCode;
-
 }
 
 class RouteTrigger extends QuestTrigger with NavigatorObserver {
   static late RouteTrigger instance = RouteTrigger();
-
-  List<Route> historyStack = [];
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {

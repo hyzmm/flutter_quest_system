@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:guidance_system/guidance_system.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
@@ -36,13 +37,6 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
 
   get length => quests.length;
 
-  QuestSequence operator [](int index) => quests[index];
-
-  @override
-  dynamic accept(QuestNodeVisitor visitor) {
-    return visitor.visitQuestRoot(this);
-  }
-
   void add(QuestSequence sequence) {
     quests.add(sequence);
     sequence.on((_) => dispatch(this));
@@ -53,14 +47,29 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
   }
 
   void clear() => quests.clear();
+
+  @override
+  dynamic accept(QuestNodeVisitor visitor) {
+    return visitor.visitQuestRoot(this);
+  }
+
+  QuestSequence operator [](int index) => quests[index];
 }
 
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
+/// 如果调用多次 [GuidanceSystem.addSequence] 可以配置多条并行执行的任务
 class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   final Object id;
   final List<Quest> quests;
 
   int progress = 0;
+
+  int get totalProgress => quests.length;
+
+  QuestStatus get status {
+    if (progress >= quests.length) return QuestStatus.completed;
+    return QuestStatus.activated;
+  }
 
   QuestSequence({required this.id, required this.quests}) {
     GuidanceSystem.seqCache[id] = this;
@@ -78,20 +87,13 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
     }
   }
 
-  Quest operator [](int index) {
-    return quests[index];
-  }
-
-  int get totalProgress => quests.length;
-
-  QuestStatus get status {
-    if (progress >= quests.length) return QuestStatus.completed;
-    return QuestStatus.activated;
-  }
-
   @override
   dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestSequence(this);
+  }
+
+  Quest operator [](int index) {
+    return quests[index];
   }
 }
 
@@ -104,13 +106,13 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
 
   QuestChecker completeChecker;
 
-  Key? uiKey;
+  // Key? uiKey;
 
   Quest({
     required this.id,
     required this.triggerChecker,
     required this.completeChecker,
-    this.uiKey,
+    // this.uiKey,
   }) {
     // Maybe this quest is auto activated.
     if (triggerChecker.customChecker != null &&
@@ -124,13 +126,13 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   factory Quest.autoTrigger({
     required id,
     required completeChecker,
-    Key? uiKey,
+    // Key? uiKey,
   }) {
     return Quest(
       id: id,
       triggerChecker: QuestChecker.automate(),
       completeChecker: completeChecker,
-      uiKey: uiKey,
+      // uiKey: uiKey,
     );
   }
 
@@ -146,6 +148,7 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   }
 }
 
+/// 任务组只有完成了全部子任务才能完成自身
 class QuestGroup extends Quest {
   List<Quest> children;
 
@@ -155,7 +158,9 @@ class QuestGroup extends Quest {
     required QuestChecker completeChecker,
     required this.children,
     Key? uiKey,
-  }) : super(
+  })  : assert((() => children.every((e) => e.runtimeType == Quest))(),
+            "The children of QuestGroup must be Quest"),
+        super(
             id: id,
             triggerChecker: triggerChecker,
             completeChecker: completeChecker);

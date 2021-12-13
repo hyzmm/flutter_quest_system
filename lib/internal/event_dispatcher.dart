@@ -2,8 +2,7 @@ import 'dart:async';
 
 mixin EventDispatcher<T> {
   final StreamController<T> _controller =
-  StreamController.broadcast(sync: true);
-
+      StreamController.broadcast(sync: true);
 
   StreamSubscription on(Function(T) callback) =>
       _controller.stream.listen(callback);
@@ -16,5 +15,5 @@ mixin EventDispatcher<T> {
     _controller.close();
   }
 
-  bool isDestroyed() => _controller.isClosed;
+  bool get isDestroyed => _controller.isClosed;
 }
