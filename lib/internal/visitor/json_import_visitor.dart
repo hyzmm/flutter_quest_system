@@ -23,7 +23,7 @@ class JsonImportVisitor extends QuestNodeVisitor {
           .indexWhere((e) => e.id.toString() == item["pointer"]);
       if (progressIndex > -1) questSequence.progress = progressIndex;
     } else {
-      questSequence.progress = questSequence.totalProgress;
+      questSequence.progress = 0;
     }
     for (var e in questSequence.quests) {
       e.accept(this);
