@@ -24,31 +24,42 @@ extension Quests on QuestId {
 }
 
 initQuests() {
-  GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
-    QuestGroup(
-        id: QuestId.q1,
-        triggerChecker: QuestChecker.automate(),
-        completeChecker: QuestChecker.automate(),
-        children: [
-          Quest.autoTrigger(
-              id: QuestId.q2,
-              completeChecker: QuestChecker.condition(
-                  const RouteCondition(routeName: routeQ1, isRemove: true))),
-          Quest.autoTrigger(
-              id: QuestId.q3,
-              completeChecker: QuestChecker.condition(QuestCondition.c3)),
-        ])
-  ]));
-  GuidanceSystem.addSequence(QuestSequence(id: QuestId.seq2, quests: [
-    Quest(
-        id: QuestId.q4,
-        triggerChecker: QuestChecker.automate(),
-        completeChecker: QuestChecker.condition(
-            const RouteCondition(routeName: routeQ2, isRemove: true))),
-    Quest(
-        id: QuestId.q5,
-        triggerChecker: QuestChecker.automate(),
-        completeChecker: QuestChecker.condition(
-            const RouteCondition(routeName: routeQ2, isRemove: true)))
-  ]));
+  GuidanceSystem.root.on((q) {
+    print(q);
+  });
+  GuidanceSystem.addSequences([
+    QuestSequence(id: Object(), quests: [
+      QuestGroup(
+          id: QuestId.q1,
+          triggerChecker: QuestChecker.automate(),
+          completeChecker: QuestChecker.automate(),
+          children: [
+            Quest.autoTrigger(
+                id: QuestId.q2,
+                completeChecker: QuestChecker.condition(
+                    const RouteCondition(routeName: routeQ1, isRemove: true))),
+            Quest.autoTrigger(
+                id: QuestId.q3,
+                completeChecker: QuestChecker.condition(QuestCondition.c3)),
+          ])
+    ]),
+    QuestSequence(id: QuestId.seq2, quests: [
+      Quest(
+          id: QuestId.q4,
+          triggerChecker: QuestChecker.automate(),
+          completeChecker: QuestChecker.condition(
+              const RouteCondition(routeName: routeQ2, isRemove: true))),
+      Quest(
+          id: QuestId.q5,
+          triggerChecker: QuestChecker.automate(),
+          completeChecker: QuestChecker.condition(
+              const RouteCondition(routeName: routeQ2, isRemove: true)))
+    ])
+  ]);
+
+  GuidanceSystem.getSequence(QuestId.seq2)!.on((q) {
+    if (q.status == QuestStatus.completed) {
+      GuidanceSystem.removeSequence(QuestId.seq2);
+    }
+  });
 }

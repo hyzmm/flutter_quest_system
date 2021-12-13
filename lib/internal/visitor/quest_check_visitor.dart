@@ -11,8 +11,9 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuestRoot(QuestRoot questRoot) {
-    for (var e in questRoot.quests) {
-      e.accept(this);
+    /// avoid error while remove quest during traversal
+    for (var i = questRoot.quests.length - 1; i >= 0; i--) {
+      questRoot.quests[i].accept(this);
     }
   }
 

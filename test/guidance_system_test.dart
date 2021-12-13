@@ -250,4 +250,5 @@ main() {
     var data = GuidanceSystem.root.accept(JsonExportVisitor());
     expect(jsonEncode(data), jsonEncode(matcher));
   });
+  test("listener should be triggered when new sequences added", () async {});
 }

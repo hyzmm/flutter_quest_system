@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:guidance_system/guidance_system.dart';
 import 'package:guidance_system/internal/trigger/quest_trigger.dart';
+import 'package:guidance_system/internal/visitor/dispatch_visitor.dart';
 import 'package:guidance_system/internal/visitor/quest_node_visitor.dart';
 
 import 'checker.dart';
@@ -39,11 +42,17 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
 
   void add(QuestSequence sequence) {
     quests.add(sequence);
-    sequence.on((_) => dispatch(this));
+    sequence._subscription = sequence.on((_) => dispatch(this));
   }
 
   void addAll(Iterable<QuestSequence> sequences) {
     sequences.forEach(add);
+  }
+
+  void remove(QuestSequence seq) {
+    quests.remove(seq);
+    seq._subscription?.cancel();
+    seq.accept(const DispatchVisitor());
   }
 
   void clear() => quests.clear();
@@ -71,6 +80,8 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
     return QuestStatus.activated;
   }
 
+  StreamSubscription? _subscription;
+
   QuestSequence({required this.id, required this.quests}) {
     GuidanceSystem.seqCache[id] = this;
 
@@ -83,13 +94,19 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
         }
       }
 
-      quests[i].on((_) => dispatch(this));
+      quests[i]._subscription = quests[i].on((_) => dispatch(this));
     }
   }
 
   @override
   dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestSequence(this);
+  }
+
+  void disconnectListeners() {
+    for (var e in quests) {
+      e._subscription?.cancel();
+    }
   }
 
   Quest operator [](int index) {
@@ -105,6 +122,8 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   QuestChecker triggerChecker;
 
   QuestChecker completeChecker;
+
+  StreamSubscription? _subscription;
 
   // Key? uiKey;
 
@@ -189,6 +208,12 @@ class QuestGroup extends Quest {
   @override
   accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestGroup(this);
+  }
+
+  void disconnectListeners() {
+    for (var e in children) {
+      e._subscription?.cancel();
+    }
   }
 
   Quest operator [](int i) => children[i];

@@ -9,7 +9,7 @@ class GuidanceSystem {
 
   static final Map<Object, Quest> questCache = {};
 
-  static QuestRoot root = QuestRoot([]);
+  static final QuestRoot root = QuestRoot([]);
 
   static final List<QuestTrigger> _triggers = [];
 
@@ -17,6 +17,16 @@ class GuidanceSystem {
 
   static void addSequence(QuestSequence seq) {
     root.add(seq);
+    root.dispatch(root);
+  }
+
+  static void removeSequence(Object id) {
+    if (seqCache.containsKey(id)) root.remove(seqCache[id]!);
+  }
+
+  static void addSequences(List<QuestSequence> seq) {
+    root.addAll(seq);
+    root.dispatch(root);
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];
