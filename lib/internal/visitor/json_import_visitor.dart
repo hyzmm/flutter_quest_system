@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:guidance_system/internal/quest.dart';
-import 'package:guidance_system/internal/visitor/quest_node_visitor.dart';
+import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
 class JsonImportVisitor extends QuestNodeVisitor {
   final Map<String, Map<String, dynamic>> data;
@@ -18,10 +18,14 @@ class JsonImportVisitor extends QuestNodeVisitor {
   @override
   visitQuestSequence(QuestSequence questSequence) {
     final item = data[questSequence.id.toString()];
-    if (item != null && item["pointer"] != null) {
+    if (item != null && item.containsKey("pointer")) {
       final progressIndex = questSequence.quests
           .indexWhere((e) => e.id.toString() == item["pointer"]);
-      if (progressIndex > -1) questSequence.progress = progressIndex;
+      if (progressIndex > -1) {
+        questSequence.progress = progressIndex;
+      } else {
+        questSequence.progress = questSequence.totalProgress;
+      }
     } else {
       questSequence.progress = 0;
     }

@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:guidance_system/internal/checker.dart';
-import 'package:guidance_system/internal/guidance_system.dart';
-import 'package:guidance_system/internal/quest.dart';
-import 'package:guidance_system/internal/trigger/custom_trigger.dart';
-import 'package:guidance_system/internal/visitor/json_export_visitor.dart';
+import 'package:quest_system/internal/checker.dart';
+import 'package:quest_system/internal/quest_system.dart';
+import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/trigger/custom_trigger.dart';
+import 'package:quest_system/internal/visitor/json_export_visitor.dart';
 
-import 'guidance_system_test.dart';
+import 'quest_system_test.dart';
 
 @immutable
 class CustomQuestId {
@@ -31,17 +31,17 @@ main() {
 
   setUpAll(() {
     ct = CustomTrigger.instance;
-    GuidanceSystem.addTrigger(ct);
+    QuestSystem.addTrigger(ct);
   });
 
   setUp(() {
-    GuidanceSystem.root.clear();
-    GuidanceSystem.questCache.clear();
-    GuidanceSystem.seqCache.clear();
+    QuestSystem.root.clear();
+    QuestSystem.questCache.clear();
+    QuestSystem.seqCache.clear();
   });
 
   test("custom quest id", () {
-    GuidanceSystem.addSequence(
+    QuestSystem.addSequence(
         QuestSequence(id: const CustomQuestId("a"), quests: [
       QuestGroup(
           id: const CustomQuestId("b"),
@@ -60,7 +60,7 @@ main() {
       ),
     ]));
 
-    GuidanceSystem.addSequence(
+    QuestSystem.addSequence(
         QuestSequence(id: const CustomQuestId("e"), quests: [
       Quest(
         id: const CustomQuestId("f"),
@@ -78,7 +78,7 @@ main() {
     //
     // GuidanceSystem.root.accept(JsonImportVisitor(matcher));
 
-    var data = GuidanceSystem.root.accept(JsonExportVisitor());
+    var data = QuestSystem.root.accept(JsonExportVisitor());
     expect(jsonEncode(data), jsonEncode({
       "CustomQuestId-a": {"pointer": "CustomQuestId-b"},
       "CustomQuestId-b": {"status": 0},

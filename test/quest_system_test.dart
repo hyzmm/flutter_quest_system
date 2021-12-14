@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:guidance_system/internal/checker.dart';
-import 'package:guidance_system/internal/guidance_system.dart';
-import 'package:guidance_system/internal/quest.dart';
-import 'package:guidance_system/internal/trigger/custom_trigger.dart';
-import 'package:guidance_system/internal/trigger/quest_trigger.dart';
-import 'package:guidance_system/internal/visitor/json_export_visitor.dart';
-import 'package:guidance_system/internal/visitor/json_import_visitor.dart';
+import 'package:quest_system/internal/checker.dart';
+import 'package:quest_system/internal/quest_system.dart';
+import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/trigger/custom_trigger.dart';
+import 'package:quest_system/internal/trigger/quest_trigger.dart';
+import 'package:quest_system/internal/visitor/json_export_visitor.dart';
+import 'package:quest_system/internal/visitor/json_import_visitor.dart';
 
 enum QuestCondition { c1, c2, c3, c4, c5, c6 }
 
@@ -29,17 +29,17 @@ main() {
 
   setUpAll(() {
     ct = CustomTrigger.instance;
-    GuidanceSystem.addTrigger(ct);
+    QuestSystem.addTrigger(ct);
   });
 
   setUp(() {
-    GuidanceSystem.root.clear();
-    GuidanceSystem.questCache.clear();
-    GuidanceSystem.seqCache.clear();
+    QuestSystem.root.clear();
+    QuestSystem.questCache.clear();
+    QuestSystem.seqCache.clear();
   });
 
   test("single task queue", () {
-    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
       Quest(
         id: QuestId.q1,
         triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -51,7 +51,7 @@ main() {
         completeChecker: QuestChecker.condition(QuestCondition.c2),
       )
     ]));
-    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
       Quest(
         id: QuestId.q3,
         triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -59,9 +59,9 @@ main() {
       )
     ]));
 
-    final q1 = GuidanceSystem.getQuest(QuestId.q1)!;
-    final q2 = GuidanceSystem.getQuest(QuestId.q2)!;
-    final q3 = GuidanceSystem.getQuest(QuestId.q3)!;
+    final q1 = QuestSystem.getQuest(QuestId.q1)!;
+    final q2 = QuestSystem.getQuest(QuestId.q2)!;
+    final q3 = QuestSystem.getQuest(QuestId.q3)!;
 
     expect(q1.status, QuestStatus.inactive);
     expect(q3.status, QuestStatus.inactive);
@@ -79,7 +79,7 @@ main() {
   });
 
   test("auto active sub-quests, and manually complete parent quest", () {
-    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
       QuestGroup(
           id: QuestId.q4,
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -96,7 +96,7 @@ main() {
           ])
     ]));
 
-    final q = GuidanceSystem.getQuest<QuestGroup>(QuestId.q4)!;
+    final q = QuestSystem.getQuest<QuestGroup>(QuestId.q4)!;
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     expect(q.status, QuestStatus.activated);
@@ -125,7 +125,7 @@ main() {
   });
 
   test("auto active sub-quests, and auto complete parent quest", () {
-    GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
       QuestGroup(
           id: QuestId.q1,
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -142,7 +142,7 @@ main() {
           ])
     ]));
 
-    final q = GuidanceSystem.root[0];
+    final q = QuestSystem.root[0];
 
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
@@ -159,7 +159,7 @@ main() {
   });
 
   test("json exporter", () {
-    GuidanceSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
+    QuestSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
       QuestGroup(
           id: QuestId.q1,
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -176,7 +176,7 @@ main() {
         completeChecker: QuestChecker.condition(QuestCondition.c3),
       ),
     ]));
-    GuidanceSystem.addSequence(QuestSequence(id: QuestId.q4, quests: [
+    QuestSystem.addSequence(QuestSequence(id: QuestId.q4, quests: [
       Quest(
         id: QuestId.q5,
         triggerChecker: QuestChecker.automate(),
@@ -185,7 +185,7 @@ main() {
     ]));
 
     final exporter = JsonExportVisitor();
-    var data = GuidanceSystem.root.accept(exporter);
+    var data = QuestSystem.root.accept(exporter);
     expect(
         jsonEncode(data),
         jsonEncode({
@@ -199,7 +199,7 @@ main() {
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c2));
     ct.dispatch(QuestTriggerData(condition: QuestCondition.c3));
-    data = GuidanceSystem.root.accept(exporter);
+    data = QuestSystem.root.accept(exporter);
     final matcher = {
       "QuestSeqId.seq1": {"pointer": null},
       "QuestId.q1": {"status": 2},
@@ -211,7 +211,7 @@ main() {
     expect(jsonEncode(data), jsonEncode(matcher));
   });
   test("json importer", () {
-    GuidanceSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
+    QuestSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
       QuestGroup(
           id: QuestId.q1,
           triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -229,7 +229,7 @@ main() {
       ),
     ]));
 
-    GuidanceSystem.addSequence(QuestSequence(id: QuestId.q4, quests: [
+    QuestSystem.addSequence(QuestSequence(id: QuestId.q4, quests: [
       Quest(
         id: QuestId.q5,
         triggerChecker: QuestChecker.automate(),
@@ -245,10 +245,10 @@ main() {
       "QuestId.q5": {"status": 1}
     };
 
-    GuidanceSystem.root.accept(JsonImportVisitor(matcher));
+    QuestSystem.root.accept(JsonImportVisitor(matcher));
 
-    var data = GuidanceSystem.root.accept(JsonExportVisitor());
+    var data = QuestSystem.root.accept(JsonExportVisitor());
     expect(jsonEncode(data), jsonEncode(matcher));
   });
-  test("listener should be triggered when new sequences added", () async {});
+  // test("listener should be triggered when new sequences added", () async {});
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:guidance_system/internal/guidance_system.dart';
+import 'package:quest_system/internal/quest_system.dart';
 
 import '../quest.dart';
 
@@ -29,7 +29,7 @@ class _QuestBuilderState<T extends Quest> extends State<QuestBuilder<T>> {
 
   @override
   void initState() {
-    quest = widget.quest ?? GuidanceSystem.getQuest<T>(widget.questId!);
+    quest = widget.quest ?? QuestSystem.getQuest<T>(widget.questId!);
     _sub = quest?.on((q) {
       setState(() {});
     });

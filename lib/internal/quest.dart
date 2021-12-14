@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:guidance_system/guidance_system.dart';
-import 'package:guidance_system/internal/trigger/quest_trigger.dart';
-import 'package:guidance_system/internal/visitor/dispatch_visitor.dart';
-import 'package:guidance_system/internal/visitor/quest_node_visitor.dart';
+import 'package:quest_system/quest_system.dart';
+import 'package:quest_system/internal/trigger/quest_trigger.dart';
+import 'package:quest_system/internal/visitor/dispatch_visitor.dart';
+import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
 import 'checker.dart';
 import 'event_dispatcher.dart';
@@ -91,7 +91,7 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
 }
 
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
-/// 如果调用多次 [GuidanceSystem.addSequence] 可以配置多条并行执行的任务
+/// 如果调用多次 [QuestSystem.addSequence] 可以配置多条并行执行的任务
 class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   final Object id;
   final List<Quest> quests;
@@ -108,14 +108,14 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   StreamSubscription? _subscription;
 
   QuestSequence({required this.id, required this.quests}) {
-    GuidanceSystem.seqCache[id] = this;
+    QuestSystem.seqCache[id] = this;
 
     for (var i = 0, len = quests.length; i < len; i++) {
-      GuidanceSystem.questCache[quests[i].id] = quests[i];
+      QuestSystem.questCache[quests[i].id] = quests[i];
 
       if (quests[i] is QuestGroup) {
         for (var e in (quests[i] as QuestGroup).children) {
-          GuidanceSystem.questCache[e.id] = e;
+          QuestSystem.questCache[e.id] = e;
         }
       }
 

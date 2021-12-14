@@ -1,9 +1,9 @@
-import 'package:guidance_system/internal/quest.dart';
-import 'package:guidance_system/internal/trigger/quest_trigger.dart';
-import 'package:guidance_system/internal/visitor/quest_check_visitor.dart';
+import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/trigger/quest_trigger.dart';
+import 'package:quest_system/internal/visitor/quest_check_visitor.dart';
 
-class GuidanceSystem {
-  static GuidanceSystem instance = GuidanceSystem._();
+class QuestSystem {
+  static QuestSystem instance = QuestSystem._();
 
   static final Map<Object, QuestSequence> seqCache = {};
 
@@ -13,7 +13,7 @@ class GuidanceSystem {
 
   static final List<QuestTrigger> _triggers = [];
 
-  GuidanceSystem._();
+  QuestSystem._();
 
   static void addSequence(QuestSequence seq) {
     root.add(seq);

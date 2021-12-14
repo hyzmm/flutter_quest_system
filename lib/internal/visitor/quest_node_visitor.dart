@@ -1,4 +1,4 @@
-import 'package:guidance_system/internal/quest.dart';
+import 'package:quest_system/internal/quest.dart';
 
 abstract class QuestNodeVisitor<T> {
   T visitQuestRoot(QuestRoot questRoot);

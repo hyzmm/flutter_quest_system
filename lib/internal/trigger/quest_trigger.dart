@@ -1,4 +1,4 @@
-import 'package:guidance_system/internal/event_dispatcher.dart';
+import 'package:quest_system/internal/event_dispatcher.dart';
 
 class TriggerDestroyedException implements Exception {}
 

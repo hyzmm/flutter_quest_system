@@ -1,7 +1,7 @@
 为 Flutter 实现的基于任务的引导系统，也可以只作为任务系统使用。
 
 ## 介绍
-下面的视频展示了 GuidanceSystem 的功能，这个 Demo 的源码在 example 里面。这里有两个任务，第一个任务有两个子任务，完成子任务后第一个任务才算完成。第二个任务是一个有两个任务的任务队列，完成后，第二个任务的 UI 会隐藏。视频的步骤是：
+下面的视频展示了 QuestSystem 的功能，这个 Demo 的源码在 example 里面。这里有两个任务，第一个任务有两个子任务，完成子任务后第一个任务才算完成。第二个任务是一个有两个任务的任务队列，完成后，第二个任务的 UI 会隐藏。视频的步骤是：
 
 1. 点击「Quest 1 - 1」，弹出 BottomSheet，由路由关闭触发任务完成
 2. 点击右下角按钮，由自定义动作完成「Quest 1 - 2」
@@ -21,11 +21,11 @@ https://user-images.githubusercontent.com/48704743/145536738-66f5146c-3e83-4b56-
 5. 完全分离的代码配置
 6. 提供 Widget 定制根据任务状态改变的 UI
 
-![Flutter-GuidanceSystem](README.assets/Flutter-GuidanceSystem.jpg)
+![Flutter-QuestSystem](README.assets/Flutter-QuestSystem.jpg)
 
-`GuidanceSystem` 由以下几个部分组成：
+`QuestSystem` 由以下几个部分组成：
 
-1. GuidanceSystem：用户入口，通过它配置和访问任务
+1. QuestSystem：用户入口，通过它配置和访问任务
 2. Quest：提供诸如任务、任务组、任务序列等结构体
 3. Trigger：任务触发器，触发后开始检查任务
 4. QuestChecker：定义如何激活或者完成任务
@@ -34,7 +34,7 @@ https://user-images.githubusercontent.com/48704743/145536738-66f5146c-3e83-4b56-
 
 ### 任务
 
-任务树不能无限的嵌套下去，GuidanceSystem 添加任务的 API 是 `addSequence` ，参数类型是 `QuestSequnce`，一个任务序列可能是：
+任务树不能无限的嵌套下去，QuestSystem 添加任务的 API 是 `addSequence` ，参数类型是 `QuestSequnce`，一个任务序列可能是：
 
 ```
 Quest 1
@@ -61,7 +61,7 @@ Quest 模块中，几个类的分工如下：
 
 - Quest：单项任务配置
 - QuestGroup：可以有子任务，子任务全部完成，才能完成自身
-- QuestSequence：GuidanceSystem 可以添加的任务序列，用来配置串行执行的任务。如果调用多次 `GuidanceSystem.addSequence` 可以配置多条并行执行的任务。
+- QuestSequence：QuestSystem 可以添加的任务序列，用来配置串行执行的任务。如果调用多次 `QuestSystem.addSequence` 可以配置多条并行执行的任务。
 
 Quest 模块的结构和组合模式非常接近，QuestSystem 通过语义限定了或者 assert 限制了无限嵌套，主要是因为考虑到多层嵌套对于任务系统来说没有现实意义，并且增加了复杂度和理解成本。
 
@@ -80,8 +80,8 @@ Quest 模块的结构和组合模式非常接近，QuestSystem 通过语义限�
 添加内置触发器，并且把路由触发器加入到 Navigator Observer 中：
 
 ```dart
-GuidanceSystem.addTrigger(RouteTrigger.instance);
-GuidanceSystem.addTrigger(CustomTrigger.instance);
+QuestSystem.addTrigger(RouteTrigger.instance);
+QuestSystem.addTrigger(CustomTrigger.instance);
 
 ...
 MaterialApp(
@@ -95,7 +95,7 @@ MaterialApp(
 配置任务：
 
 ```dart
-GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
   Quest(...),
   Quest(...),
 ]));
@@ -104,7 +104,7 @@ GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
 最后使用 `quest.on(...)`  或者 QuestBuilder 使用任务：
 
 ```dart
-GuidanceSystem.getQuest(id)!.on((quest) {
+QuestSystem.getQuest(id)!.on((quest) {
   print(quest.status);
 });
 // or
@@ -119,7 +119,7 @@ QuestBuilder<QuestGroup>.id(id,
 创建两条简单的任务序列，在 Q1 完成后，激活 Q2，完成 Q2 后，任务全部完成。
 
 ```
-GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
   Quest(
     id: QuestId.q1,
     triggerChecker: QuestChecker.condition(QuestCondition.c1),
@@ -131,7 +131,7 @@ GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
     completeChecker: QuestChecker.condition(QuestCondition.c2),
   )
 ]));
-GuidanceSystem.addSequence(QuestSequence(id: Object(), quests: [
+QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
   Quest(
     id: QuestId.q3,
     triggerChecker: QuestChecker.condition(QuestCondition.c1),

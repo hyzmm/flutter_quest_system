@@ -1,4 +1,4 @@
-import 'package:guidance_system/internal/trigger/quest_trigger.dart';
+import 'package:quest_system/internal/trigger/quest_trigger.dart';
 
 class QuestChecker {
   Object? condition;

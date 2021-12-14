@@ -2,15 +2,15 @@ import 'package:example/quest.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:guidance_system/guidance_system.dart';
+import 'package:quest_system/quest_system.dart';
 
 const routeQ1 = "/routeQ1";
 const routeQ2 = "/routeQ2";
 
 void main() {
   // First step: add quest triggers
-  GuidanceSystem.addTrigger(RouteTrigger.instance);
-  GuidanceSystem.addTrigger(CustomTrigger.instance);
+  QuestSystem.addTrigger(RouteTrigger.instance);
+  QuestSystem.addTrigger(CustomTrigger.instance);
 
   // Second step: add quest to guidance system
   initQuests();
@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Text("Quest 1",
                       style: TextStyle(fontWeight: FontWeight.w500)),
                   // Third step: listen to quest status change
-                  QuestBuilder<QuestGroup>.id(QuestId.q1,
+                  QuestBuilder<QuestGroup>.id(MyQuestId.q1,
                       builder: (QuestGroup? quest) {
                     return Text(
                         "${quest!.progress}/${quest.length} - ${quest.status.description}");
@@ -97,11 +97,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 elevation: 5,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [QuestId.q2, QuestId.q3]
+                  children: [MyQuestId.q2, MyQuestId.q3]
                       .map((qId) =>
                           QuestBuilder<Quest>.id(qId, builder: (quest) {
                             return TextButton(
-                              onPressed: qId == QuestId.q3
+                              onPressed: qId == MyQuestId.q3
                                   ? null
                                   : () {
                                       Get.bottomSheet(
@@ -139,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget buildQ2Box() {
     return QuestSequenceBuilder(
-        questId: QuestId.seq2,
+        questId: MyQuestId.seq2,
         builder: (seq) {
           if (seq == null) return const Text("Quest Not Found");
           if (seq.status == QuestStatus.completed) return const SizedBox();
@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(QuestId.seq2.title,
+                      Text(MyQuestId.seq2.title,
                           style: const TextStyle(fontWeight: FontWeight.w500)),
                       Text("${seq.progress}/${seq.totalProgress}"),
                       Text(seq.status.description),
