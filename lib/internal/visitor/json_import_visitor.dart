@@ -4,7 +4,7 @@ import 'package:quest_system/internal/quest.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
 class JsonImportVisitor extends QuestNodeVisitor {
-  final Map<String, Map<String, dynamic>> data;
+  final Map<String, dynamic> data;
 
   JsonImportVisitor(this.data);
 

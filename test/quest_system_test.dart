@@ -11,7 +11,7 @@ import 'package:quest_system/internal/visitor/json_import_visitor.dart';
 
 enum MyQuestCondition { c1, c2, c3, c4, c5, c6 }
 
-enum QuestSeqId {
+enum MyQuestSeqId {
   seq1,
   seq2,
 }
@@ -159,7 +159,7 @@ main() {
   });
 
   test("json exporter", () {
-    QuestSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
+    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -189,29 +189,29 @@ main() {
     expect(
         jsonEncode(data),
         jsonEncode({
-          "QuestSeqId.seq1": {"pointer": "QuestId.q1"},
-          "QuestId.q1": {"status": 0},
-          "QuestId.q2": {"status": 1},
-          "QuestId.q3": {"status": 1},
-          "QuestId.q4": {"pointer": "QuestId.q5"},
-          "QuestId.q5": {"status": 1}
+          "MyQuestSeqId.seq1": {"pointer": "MyQuestId.q1"},
+          "MyQuestId.q1": {"status": 0},
+          "MyQuestId.q2": {"status": 1},
+          "MyQuestId.q3": {"status": 1},
+          "MyQuestId.q4": {"pointer": "MyQuestId.q5"},
+          "MyQuestId.q5": {"status": 1}
         }));
     ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c1));
     ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
     ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c3));
     data = QuestSystem.root.accept(exporter);
     final matcher = {
-      "QuestSeqId.seq1": {"pointer": null},
-      "QuestId.q1": {"status": 2},
-      "QuestId.q2": {"status": 2},
-      "QuestId.q3": {"status": 2},
-      "QuestId.q4": {"pointer": "QuestId.q5"},
-      "QuestId.q5": {"status": 1}
+      "MyQuestSeqId.seq1": {"pointer": null},
+      "MyQuestId.q1": {"status": 2},
+      "MyQuestId.q2": {"status": 2},
+      "MyQuestId.q3": {"status": 2},
+      "MyQuestId.q4": {"pointer": "MyQuestId.q5"},
+      "MyQuestId.q5": {"status": 1}
     };
     expect(jsonEncode(data), jsonEncode(matcher));
   });
   test("json importer", () {
-    QuestSystem.addSequence(QuestSequence(id: QuestSeqId.seq1, quests: [
+    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -237,12 +237,12 @@ main() {
       )
     ]));
     final matcher = {
-      "QuestSeqId.seq1": {"pointer": null},
-      "QuestId.q1": {"status": 2},
-      "QuestId.q2": {"status": 1},
-      "QuestId.q3": {"status": 2},
-      "QuestId.q4": {"pointer": "QuestId.q5"},
-      "QuestId.q5": {"status": 1}
+      "MyQuestSeqId.seq1": {"pointer": null},
+      "MyQuestId.q1": {"status": 2},
+      "MyQuestId.q2": {"status": 1},
+      "MyQuestId.q3": {"status": 2},
+      "MyQuestId.q4": {"pointer": "MyQuestId.q5"},
+      "MyQuestId.q5": {"status": 1}
     };
 
     QuestSystem.root.accept(JsonImportVisitor(matcher));
