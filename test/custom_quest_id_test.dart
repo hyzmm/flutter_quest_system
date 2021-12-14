@@ -45,18 +45,18 @@ main() {
         QuestSequence(id: const CustomQuestId("a"), quests: [
       QuestGroup(
           id: const CustomQuestId("b"),
-          triggerChecker: QuestChecker.condition(QuestCondition.c1),
+          triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
           completeChecker: QuestChecker.automate(),
           children: [
             Quest.autoTrigger(
               id: const CustomQuestId("c"),
-              completeChecker: QuestChecker.condition(QuestCondition.c2),
+              completeChecker: QuestChecker.condition(MyQuestCondition.c2),
             ),
           ]),
       Quest(
         id: const CustomQuestId("d"),
         triggerChecker: QuestChecker.automate(),
-        completeChecker: QuestChecker.condition(QuestCondition.c3),
+        completeChecker: QuestChecker.condition(MyQuestCondition.c3),
       ),
     ]));
 
@@ -65,7 +65,7 @@ main() {
       Quest(
         id: const CustomQuestId("f"),
         triggerChecker: QuestChecker.automate(),
-        completeChecker: QuestChecker.condition(QuestCondition.c5),
+        completeChecker: QuestChecker.condition(MyQuestCondition.c5),
       )
     ]));
     // final matcher = {

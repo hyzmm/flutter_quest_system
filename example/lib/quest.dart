@@ -2,7 +2,7 @@ import 'package:example/main.dart';
 import 'package:quest_system/quest_system.dart';
 
 enum MyQuestId { q1, q2, q3, seq2, q4, q5 }
-enum QuestCondition { c1, c2, c3, c4 }
+enum MyQuestCondition { c1, c2, c3, c4 }
 
 extension Quests on MyQuestId {
   String get title {
@@ -40,7 +40,7 @@ initQuests() {
                     const RouteCondition(routeName: routeQ1, isRemove: true))),
             Quest.autoTrigger(
                 id: MyQuestId.q3,
-                completeChecker: QuestChecker.condition(QuestCondition.c3)),
+                completeChecker: QuestChecker.condition(MyQuestCondition.c3)),
           ])
     ]),
     QuestSequence(id: MyQuestId.seq2, quests: [

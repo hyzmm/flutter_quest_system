@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:quest_system/quest_system.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/dispatch_visitor.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
+import 'package:quest_system/quest_system.dart';
 
 import 'checker.dart';
 import 'event_dispatcher.dart';
@@ -29,6 +29,7 @@ extension QuestStatusExtension on QuestStatus {
   }
 }
 
+/// [QuestId] 用于复杂的条件定义，与 [QuestCondition] 仅有语义上的区分
 @immutable
 class QuestId {
   /// enum collection
@@ -52,6 +53,11 @@ class QuestId {
 
   @override
   String toString() => segments.join();
+}
+
+/// [QuestCondition] 用于复杂的条件定义，与 [QuestId] 仅有语义上的区分
+class QuestCondition extends QuestId {
+  const QuestCondition(List<Object> segments) : super(segments);
 }
 
 abstract class QuestNode {
