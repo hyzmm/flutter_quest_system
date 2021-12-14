@@ -29,6 +29,31 @@ extension QuestStatusExtension on QuestStatus {
   }
 }
 
+@immutable
+class QuestId {
+  /// enum collection
+  final List<Object> segments;
+
+  const QuestId(this.segments);
+
+  @override
+  int get hashCode => toString().hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! QuestId) return false;
+    if (segments.length != other.segments.length) return false;
+
+    for (int i = segments.length - 1; i >= 0; i--) {
+      if (segments[i] != other.segments[i]) return false;
+    }
+    return true;
+  }
+
+  @override
+  String toString() => segments.join();
+}
+
 abstract class QuestNode {
   void accept(QuestNodeVisitor visitor);
 }
