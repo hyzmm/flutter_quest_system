@@ -26,19 +26,35 @@ class QuestBuilder<T extends Quest> extends StatefulWidget {
 class _QuestBuilderState<T extends Quest> extends State<QuestBuilder<T>> {
   T? quest;
   StreamSubscription? _sub;
+  StreamSubscription? _rootSub;
 
   @override
   void initState() {
-    quest = widget.quest ?? QuestSystem.getQuest<T>(widget.questId!);
-    _sub = quest?.on((q) {
-      setState(() {});
-    });
+    quest = widget.quest;
+    if (quest == null) {
+      quest = QuestSystem.getQuest<T>(widget.questId!);
+      // quest unregistered
+      if (quest == null) {
+        // listener to quest added
+        _rootSub = QuestSystem.root.on((_) {
+          quest = QuestSystem.getQuest<T>(widget.questId!);
+          if (quest != null) {
+            setState(() {});
+            _sub = quest!.on((_) => setState(() {}));
+            _rootSub!.cancel();
+            _rootSub = null;
+          }
+        });
+      }
+    }
+    _sub = quest?.on((_) => setState(() {}));
     super.initState();
   }
 
   @override
   void dispose() {
     _sub?.cancel();
+    _rootSub?.cancel();
     super.dispose();
   }
 
