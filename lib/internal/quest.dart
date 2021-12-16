@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/dispatch_visitor.dart';
+import 'package:quest_system/internal/visitor/dispose_visitor.dart';
 import 'package:quest_system/internal/visitor/quest_check_visitor.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 import 'package:quest_system/quest_system.dart';
@@ -87,7 +88,10 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
     seq.accept(const DispatchVisitor());
   }
 
-  void clear() => quests.clear();
+  void clear() {
+    accept(const DisposeVisitor());
+    quests.clear();
+  }
 
   @override
   dynamic accept(QuestNodeVisitor visitor) {
