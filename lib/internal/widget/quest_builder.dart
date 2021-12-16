@@ -36,7 +36,7 @@ class _QuestBuilderState<T extends Quest> extends State<QuestBuilder<T>> {
       // quest unregistered
       if (quest == null) {
         // listener to quest added
-        _rootSub = QuestSystem.root.on((_) {
+        _rootSub = QuestSystem.listenerAll(() {
           quest = QuestSystem.getQuest<T>(widget.questId!);
           if (quest != null) {
             setState(() {});

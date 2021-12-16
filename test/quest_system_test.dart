@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quest_system/internal/checker.dart';
-import 'package:quest_system/internal/quest_system.dart';
 import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/quest_system.dart';
 import 'package:quest_system/internal/trigger/custom_trigger.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/json_export_visitor.dart';
@@ -33,7 +33,7 @@ main() {
   });
 
   setUp(() {
-    QuestSystem.root.clear();
+    QuestSystem.clear();
     QuestSystem.questCache.clear();
     QuestSystem.seqCache.clear();
   });
@@ -65,10 +65,10 @@ main() {
 
     expect(q1.status, QuestStatus.inactive);
     expect(q3.status, QuestStatus.inactive);
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c1));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
     expect(q1.status, QuestStatus.activated);
     expect(q3.status, QuestStatus.activated);
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
     expect(q1.status, QuestStatus.completed);
     expect(q3.status, QuestStatus.completed);
 
@@ -98,9 +98,9 @@ main() {
 
     final q = QuestSystem.getQuest<QuestGroup>(MyQuestId.q4)!;
 
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c1));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
     expect(q.status, QuestStatus.activated);
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
     expect(
       q.status != QuestStatus.completed,
       true,
@@ -110,22 +110,22 @@ main() {
     expect(q.children[0].status, QuestStatus.activated);
     expect(q.children[1].status, QuestStatus.activated);
 
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c3));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c3));
     expect(q.children[0].status, QuestStatus.completed);
     expect(q.children[1].status, QuestStatus.activated);
     expect(q.status, QuestStatus.activated);
 
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c4));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c4));
     expect(q.children[0].status, QuestStatus.completed);
     expect(q.children[1].status, QuestStatus.completed);
     expect(q.status, QuestStatus.activated);
 
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
     expect(q.status, QuestStatus.completed);
   });
 
   test("auto active sub-quests, and auto complete parent quest", () {
-    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -142,18 +142,18 @@ main() {
           ])
     ]));
 
-    final q = QuestSystem.root[0];
+    final q = QuestSystem.getSequence(MyQuestSeqId.seq1)!;
 
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c1));
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
     expect(
       q.status != QuestStatus.completed,
       true,
       reason: "before the quest group completed, "
           "you must complete all its sub quests",
     );
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c3));
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c4));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c3));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c4));
 
     expect(q.status, QuestStatus.completed);
   });
@@ -185,7 +185,7 @@ main() {
     ]));
 
     final exporter = JsonExportVisitor();
-    var data = QuestSystem.root.accept(exporter);
+    var data = QuestSystem.acceptVisitor(exporter);
     expect(
         jsonEncode(data),
         jsonEncode({
@@ -196,10 +196,10 @@ main() {
           "MyQuestId.q4": {"pointer": "MyQuestId.q5"},
           "MyQuestId.q5": {"status": 1}
         }));
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c1));
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c2));
-    ct.dispatch(QuestTriggerData(condition: MyQuestCondition.c3));
-    data = QuestSystem.root.accept(exporter);
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
+    ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c3));
+    data = QuestSystem.acceptVisitor(exporter);
     final matcher = {
       "MyQuestSeqId.seq1": {"pointer": null},
       "MyQuestId.q1": {"status": 2},
@@ -245,10 +245,57 @@ main() {
       "MyQuestId.q5": {"status": 1}
     };
 
-    QuestSystem.root.accept(JsonImportVisitor(matcher));
+    QuestSystem.acceptVisitor(JsonImportVisitor(matcher));
 
-    var data = QuestSystem.root.accept(JsonExportVisitor());
+    var data = QuestSystem.acceptVisitor(JsonExportVisitor());
     expect(jsonEncode(data), jsonEncode(matcher));
   });
   // test("listener should be triggered when new sequences added", () async {});
+
+  group("quest callback test", () {
+    test("callback onTrigger", () {
+      final onTriggerCallback = expectAsync0(() {}, count: 2);
+      final onCompleteCallback = expectAsync0(() {}, count: 2);
+
+      QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+        QuestGroup(
+            id: MyQuestId.q1,
+            triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
+            completeChecker: QuestChecker.automate(),
+            onTrigger: onTriggerCallback,
+            onComplete: onCompleteCallback,
+            children: [
+              Quest.autoTrigger(
+                id: MyQuestId.q2,
+                completeChecker: QuestChecker.condition(MyQuestCondition.c2),
+                onTrigger: onTriggerCallback,
+                onComplete: onCompleteCallback,
+              ),
+            ]),
+      ]));
+      CustomTrigger.instance
+          .dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
+      CustomTrigger.instance
+          .dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
+    });
+  });
+  test("test listener callbacks", () {
+    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+      QuestGroup(
+          id: MyQuestId.q1,
+          triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
+          completeChecker: QuestChecker.automate(),
+          children: [
+            Quest.autoTrigger(
+              id: MyQuestId.q2,
+              completeChecker: QuestChecker.condition(MyQuestCondition.c2),
+            ),
+          ]),
+    ]));
+    QuestSystem.listenerAll(expectAsync0(() {}, count: 3));
+    CustomTrigger.instance
+        .dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
+    CustomTrigger.instance
+        .dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));
+  });
 }

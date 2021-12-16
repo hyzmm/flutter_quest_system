@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:quest_system/internal/quest.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/quest_check_visitor.dart';
+import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
 class QuestSystem {
   static QuestSystem instance = QuestSystem._();
@@ -9,24 +13,29 @@ class QuestSystem {
 
   static final Map<Object, Quest> questCache = {};
 
-  static final QuestRoot root = QuestRoot([]);
+  static final QuestRoot _root = QuestRoot([]);
 
   static final List<QuestTrigger> _triggers = [];
 
   QuestSystem._();
 
+  static void clear() => _root.clear();
+
+  static dynamic acceptVisitor(QuestNodeVisitor visitor) =>
+      _root.accept(visitor);
+
   static void addSequence(QuestSequence seq) {
-    root.add(seq);
-    root.dispatch(root);
+    _root.add(seq);
+    _root.dispatch(_root);
   }
 
   static void removeSequence(Object id) {
-    if (seqCache.containsKey(id)) root.remove(seqCache[id]!);
+    if (seqCache.containsKey(id)) _root.remove(seqCache[id]!);
   }
 
   static void addSequences(List<QuestSequence> seq) {
-    root.addAll(seq);
-    root.dispatch(root);
+    _root.addAll(seq);
+    _root.dispatch(_root);
   }
 
   static QuestSequence? getSequence(Object id) => seqCache[id];
@@ -47,7 +56,10 @@ class QuestSystem {
     trigger.destroy();
   }
 
+  static StreamSubscription listenerAll(VoidCallback callback) =>
+      _root.on((_) => callback());
+
   static void _onTrigger(QuestTriggerData data) {
-    root.accept(QuestCheckVisitor(data));
+    _root.accept(QuestCheckVisitor(data));
   }
 }

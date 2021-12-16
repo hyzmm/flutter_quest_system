@@ -24,9 +24,6 @@ extension Quests on MyQuestId {
 }
 
 initQuests() {
-  QuestSystem.root.on((q) {
-    print(q);
-  });
   QuestSystem.addSequences([
     QuestSequence(id: Object(), quests: [
       QuestGroup(

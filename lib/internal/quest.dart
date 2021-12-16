@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/dispatch_visitor.dart';
+import 'package:quest_system/internal/visitor/quest_check_visitor.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 import 'package:quest_system/quest_system.dart';
 
@@ -156,41 +157,39 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
 
   StreamSubscription? _subscription;
 
-  // Key? uiKey;
+  VoidCallback? onTrigger;
+
+  //
+  // onProgress(double progress) {}
+  //
+  VoidCallback? onComplete;
 
   Quest({
     required this.id,
     required this.triggerChecker,
     required this.completeChecker,
+    this.onTrigger,
+    this.onComplete,
     // this.uiKey,
   }) {
-    // Maybe this quest is auto activated.
-    if (triggerChecker.customChecker != null &&
-        triggerChecker.customChecker!
-            .call(QuestTriggerData(condition: Object()))) {
-      status = QuestStatus.activated;
-    }
+    accept(const QuestCheckVisitor(QuestTriggerData(condition: Object())));
   }
 
   /// 创建一个自动激活的子任务
   factory Quest.autoTrigger({
     required id,
     required completeChecker,
-    // Key? uiKey,
+    VoidCallback? onTrigger,
+    VoidCallback? onComplete,
   }) {
     return Quest(
       id: id,
       triggerChecker: QuestChecker.automate(),
       completeChecker: completeChecker,
-      // uiKey: uiKey,
+      onTrigger: onTrigger,
+      onComplete: onComplete,
     );
   }
-
-  // onTrigger(Key uiKey) {}
-  //
-  // onProgress(double progress) {}
-  //
-  // onFinish() {}
 
   @override
   dynamic accept(QuestNodeVisitor visitor) {
@@ -207,13 +206,17 @@ class QuestGroup extends Quest {
     required QuestChecker triggerChecker,
     required QuestChecker completeChecker,
     required this.children,
+    VoidCallback? onTrigger,
+    VoidCallback? onComplete,
     Key? uiKey,
   })  : assert((() => children.every((e) => e.runtimeType == Quest))(),
             "The children of QuestGroup must be Quest"),
         super(
             id: id,
             triggerChecker: triggerChecker,
-            completeChecker: completeChecker);
+            completeChecker: completeChecker,
+            onTrigger: onTrigger,
+            onComplete: onComplete);
 
   /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
   /// 例如，三个子任务完成了一个，完成率为 1/3

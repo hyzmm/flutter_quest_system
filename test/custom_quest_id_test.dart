@@ -35,7 +35,7 @@ main() {
   });
 
   setUp(() {
-    QuestSystem.root.clear();
+    QuestSystem.clear();
     QuestSystem.questCache.clear();
     QuestSystem.seqCache.clear();
   });
@@ -78,7 +78,7 @@ main() {
     //
     // GuidanceSystem.root.accept(JsonImportVisitor(matcher));
 
-    var data = QuestSystem.root.accept(JsonExportVisitor());
+    var data = QuestSystem.acceptVisitor(JsonExportVisitor());
     expect(jsonEncode(data), jsonEncode({
       "CustomQuestId-a": {"pointer": "CustomQuestId-b"},
       "CustomQuestId-b": {"status": 0},

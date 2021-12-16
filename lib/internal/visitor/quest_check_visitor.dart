@@ -47,6 +47,7 @@ class QuestCheckVisitor implements QuestNodeVisitor {
       case QuestStatus.inactive:
         if (group.triggerChecker.check(data)) {
           group.status = QuestStatus.activated;
+          group.onTrigger?.call();
           // When a query be activated, its children will be activated too
           for (var q in group.children) {
             if (_checkSubQuest(q)) shouldDispatch = true;
@@ -65,6 +66,7 @@ class QuestCheckVisitor implements QuestNodeVisitor {
         }
         if (childrenCompleted && group.completeChecker.check(data)) {
           group.status = QuestStatus.completed;
+          group.onComplete?.call();
 
           shouldDispatch = true;
           log("Complete quest group ${group.id}", name: "GUIDANCE");
@@ -83,12 +85,14 @@ class QuestCheckVisitor implements QuestNodeVisitor {
       case QuestStatus.inactive:
         if (quest.triggerChecker.check(data)) {
           quest.status = QuestStatus.activated;
+          quest.onTrigger?.call();
           quest.dispatch(quest);
         }
         break;
       case QuestStatus.activated:
         if (quest.completeChecker.check(data)) {
           quest.status = QuestStatus.completed;
+          quest.onComplete?.call();
           quest.dispatch(quest);
           log("Complete quest ${quest.id}", name: "GUIDANCE");
         }

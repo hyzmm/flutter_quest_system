@@ -54,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () {
             // Fourth step: trigger some conditions
             CustomTrigger.instance
-                .dispatch(QuestTriggerData(condition: MyQuestCondition.c3));
+                .dispatch(const QuestTriggerData(condition: MyQuestCondition.c3));
           },
           child: const Text("Press me to complete Quest 2")),
       body: Padding(
