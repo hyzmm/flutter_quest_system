@@ -18,6 +18,11 @@ class RouteCondition {
   @override
   // ignore: unnecessary_overrides
   int get hashCode => super.hashCode;
+
+  @override
+  String toString() {
+    return 'RouteCondition{routeName: $routeName, isRemove: $isRemove}';
+  }
 }
 
 class RouteTrigger extends QuestTrigger with NavigatorObserver {
@@ -38,7 +43,7 @@ class RouteTrigger extends QuestTrigger with NavigatorObserver {
     if (route.settings.name != null) {
       dispatch(QuestTriggerData(
           condition:
-              RouteCondition(routeName: route.settings.name!, isRemove: true)));
+          RouteCondition(routeName: route.settings.name!, isRemove: true)));
     }
     super.didPop(route, previousRoute);
   }
@@ -48,7 +53,7 @@ class RouteTrigger extends QuestTrigger with NavigatorObserver {
     if (route.settings.name != null) {
       dispatch(QuestTriggerData(
           condition:
-              RouteCondition(routeName: route.settings.name!, isRemove: true)));
+          RouteCondition(routeName: route.settings.name!, isRemove: true)));
     }
     super.didRemove(route, previousRoute);
   }

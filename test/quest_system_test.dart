@@ -25,6 +25,7 @@ enum MyQuestId {
 }
 
 main() {
+  QuestSystem.verbose = true;
   late CustomTrigger ct;
 
   setUpAll(() {

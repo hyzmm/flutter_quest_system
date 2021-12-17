@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:quest_system/internal/quest.dart';
@@ -7,6 +8,8 @@ import 'package:quest_system/internal/visitor/quest_check_visitor.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
 class QuestSystem {
+  static bool verbose = false;
+
   static QuestSystem instance = QuestSystem._();
 
   static final Map<Object, QuestSequence> seqCache = {};
@@ -60,6 +63,7 @@ class QuestSystem {
       _root.on((_) => callback());
 
   static void _onTrigger(QuestTriggerData data) {
+    if (verbose) log("Trigger Check with condition ${data.condition}", name: "QUEST");
     _root.accept(QuestCheckVisitor(data));
   }
 }

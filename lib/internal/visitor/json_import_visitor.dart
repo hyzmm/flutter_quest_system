@@ -53,7 +53,7 @@ class JsonImportVisitor extends QuestNodeVisitor {
         quest.status = QuestStatus.values[statusIndex];
       } catch (e) {
         log("Failed to deserialize QuestStatus index $statusIndex",
-            name: "GUIDANCE");
+            name: "QUEST");
       }
     }
   }

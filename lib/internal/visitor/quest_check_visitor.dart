@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:quest_system/internal/quest.dart';
+import 'package:quest_system/internal/quest_system.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
@@ -19,6 +20,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuestSequence(QuestSequence seq) {
+    if (QuestSystem.verbose) log("Check quest sequence ${seq.id}", name: "QUEST");
+
     /// Quests completed
     if (seq.progress >= seq.quests.length) return;
 
@@ -32,6 +35,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuestGroup(QuestGroup group) {
+    if (QuestSystem.verbose) log("Check quest group ${group.id}", name: "QUEST");
+
     // return true if sub quest's status changes
     bool _checkSubQuest(Quest q) {
       final oldStatus = q.status;
@@ -46,6 +51,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     switch (group.status) {
       case QuestStatus.inactive:
         if (group.triggerChecker.check(data)) {
+          if (QuestSystem.verbose) log("Active quest group ${group.id}", name: "QUEST");
+
           group.status = QuestStatus.activated;
           group.onTrigger?.call();
           // When a query be activated, its children will be activated too
@@ -65,11 +72,12 @@ class QuestCheckVisitor implements QuestNodeVisitor {
           }
         }
         if (childrenCompleted && group.completeChecker.check(data)) {
+          if (QuestSystem.verbose) log("Complete quest group ${group.id}", name: "QUEST");
+
           group.status = QuestStatus.completed;
           group.onComplete?.call();
 
           shouldDispatch = true;
-          log("Complete quest group ${group.id}", name: "GUIDANCE");
         }
         break;
       case QuestStatus.completed:
@@ -81,9 +89,12 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuest(Quest quest) {
+    if (QuestSystem.verbose) log("Check quest ${quest.id}", name: "QUEST");
+
     switch (quest.status) {
       case QuestStatus.inactive:
         if (quest.triggerChecker.check(data)) {
+          if (QuestSystem.verbose) log("Active quest ${quest.id}", name: "QUEST");
           quest.status = QuestStatus.activated;
           quest.onTrigger?.call();
           quest.dispatch(quest);
@@ -91,10 +102,10 @@ class QuestCheckVisitor implements QuestNodeVisitor {
         break;
       case QuestStatus.activated:
         if (quest.completeChecker.check(data)) {
+          if (QuestSystem.verbose) log("Complete quest ${quest.id}", name: "QUEST");
           quest.status = QuestStatus.completed;
           quest.onComplete?.call();
           quest.dispatch(quest);
-          log("Complete quest ${quest.id}", name: "GUIDANCE");
         }
         break;
       case QuestStatus.completed:

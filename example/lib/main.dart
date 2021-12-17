@@ -8,6 +8,7 @@ const routeQ1 = "/routeQ1";
 const routeQ2 = "/routeQ2";
 
 void main() {
+  QuestSystem.verbose = true;
   // First step: add quest triggers
   QuestSystem.addTrigger(RouteTrigger.instance);
   QuestSystem.addTrigger(CustomTrigger.instance);
