@@ -3,20 +3,20 @@ import 'dart:developer';
 import 'package:quest_system/internal/quest.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
-class JsonImportVisitor extends QuestNodeVisitor {
+class JsonImportVisitor implements QuestNodeVisitor<void> {
   final Map<String, dynamic> data;
 
   JsonImportVisitor(this.data);
 
   @override
-  dynamic visitQuestRoot(QuestRoot questRoot) {
+  void visitQuestRoot(QuestRoot questRoot) {
     for (var e in questRoot.quests) {
       e.accept(this);
     }
   }
 
   @override
-  visitQuestSequence(QuestSequence questSequence) {
+  void visitQuestSequence(QuestSequence questSequence) {
     final item = data[questSequence.id.toString()];
     if (item != null && item.containsKey("pointer")) {
       final progressIndex = questSequence.quests
@@ -35,7 +35,7 @@ class JsonImportVisitor extends QuestNodeVisitor {
   }
 
   @override
-  visitQuestGroup(QuestGroup questGroup) {
+  void visitQuestGroup(QuestGroup questGroup) {
     visitQuest(questGroup);
     for (var e in questGroup.children) {
       e.accept(this);
@@ -43,7 +43,7 @@ class JsonImportVisitor extends QuestNodeVisitor {
   }
 
   @override
-  visitQuest(Quest quest) {
+  void visitQuest(Quest quest) {
     final item = data[quest.id.toString()];
     if (item == null) return;
 

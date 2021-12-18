@@ -1,7 +1,6 @@
 library quest_system;
 
 export 'internal/quest_system.dart';
-export 'internal/widget/quest_sequence_builder.dart';
 export 'internal/widget/quest_builder.dart';
 export 'internal/quest.dart';
 export 'internal/checker.dart';

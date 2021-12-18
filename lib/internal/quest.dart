@@ -62,14 +62,18 @@ class QuestCondition extends QuestId {
   const QuestCondition(List<Object> segments) : super(segments);
 }
 
-abstract class QuestNode {
+abstract class QuestNode<T> with EventDispatcher<T> {
+  final Object id;
+
+  QuestNode(this.id);
+
   void accept(QuestNodeVisitor visitor);
 }
 
-class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
+class QuestRoot extends QuestNode {
   List<QuestSequence> quests;
 
-  QuestRoot(this.quests);
+  QuestRoot(this.quests) : super(Object());
 
   get length => quests.length;
 
@@ -103,8 +107,7 @@ class QuestRoot with EventDispatcher<QuestRoot> implements QuestNode {
 
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
 /// 如果调用多次 [QuestSystem.addSequence] 可以配置多条并行执行的任务
-class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
-  final Object id;
+class QuestSequence extends QuestNode<QuestSequence> {
   final List<Quest> quests;
 
   int progress = 0;
@@ -118,15 +121,15 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
 
   StreamSubscription? _subscription;
 
-  QuestSequence({required this.id, required this.quests}) {
-    QuestSystem.seqCache[id] = this;
+  QuestSequence({required Object id, required this.quests}) : super(id) {
+    QuestSystem.questMap[id] = this;
 
     for (var i = 0, len = quests.length; i < len; i++) {
-      QuestSystem.questCache[quests[i].id] = quests[i];
+      QuestSystem.questMap[quests[i].id] = quests[i];
 
       if (quests[i] is QuestGroup) {
         for (var e in (quests[i] as QuestGroup).children) {
-          QuestSystem.questCache[e.id] = e;
+          QuestSystem.questMap[e.id] = e;
         }
       }
 
@@ -150,9 +153,7 @@ class QuestSequence with EventDispatcher<QuestSequence> implements QuestNode {
   }
 }
 
-class Quest with EventDispatcher<Quest> implements QuestNode {
-  Object id;
-
+class Quest extends QuestNode<Quest> {
   QuestStatus status = QuestStatus.inactive;
 
   QuestChecker triggerChecker;
@@ -169,13 +170,13 @@ class Quest with EventDispatcher<Quest> implements QuestNode {
   VoidCallback? onComplete;
 
   Quest({
-    required this.id,
+    required Object id,
     required this.triggerChecker,
     required this.completeChecker,
     this.onTrigger,
     this.onComplete,
     // this.uiKey,
-  }) {
+  }) : super(id) {
     accept(const QuestCheckVisitor(QuestTriggerData(condition: Object())));
   }
 

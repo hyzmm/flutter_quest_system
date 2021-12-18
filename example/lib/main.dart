@@ -54,8 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: ElevatedButton(
           onPressed: () {
             // Fourth step: trigger some conditions
-            CustomTrigger.instance
-                .dispatch(const QuestTriggerData(condition: MyQuestCondition.c3));
+            CustomTrigger.instance.dispatch(
+                const QuestTriggerData(condition: MyQuestCondition.c3));
           },
           child: const Text("Press me to complete Quest 2")),
       body: Padding(
@@ -139,44 +139,42 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildQ2Box() {
-    return QuestSequenceBuilder(
-        questId: MyQuestId.seq2,
-        builder: (seq) {
-          if (seq == null) return const Text("Quest Not Found");
-          if (seq.status == QuestStatus.completed) return const SizedBox();
+    return QuestBuilder<QuestSequence>.id(MyQuestId.seq2, builder: (seq) {
+      if (seq == null) return const Text("Quest Not Found");
+      if (seq.status == QuestStatus.completed) return const SizedBox();
 
-          return Card(
-            elevation: 10,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                // crossAxisAlignment: CrossAxisAlignment.start,
+      return Card(
+        elevation: 10,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(MyQuestId.seq2.title,
-                          style: const TextStyle(fontWeight: FontWeight.w500)),
-                      Text("${seq.progress}/${seq.totalProgress}"),
-                      Text(seq.status.description),
-                    ],
-                  ),
-
-                  // Quest.autoTrigger todo
-                  const SizedBox(height: 8),
-                  const Text(
-                      "I will disappear after completed, Press the button twice to compete the quest sequence."),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                      onPressed: () {
-                        Get.to(() => const Quest2Page(), routeName: routeQ2);
-                      },
-                      child: const Text("Press me")),
+                  Text(MyQuestId.seq2.title,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  Text("${seq.progress}/${seq.totalProgress}"),
+                  Text(seq.status.description),
                 ],
               ),
-            ),
-          );
-        });
+
+              // Quest.autoTrigger todo
+              const SizedBox(height: 8),
+              const Text(
+                  "I will disappear after completed, Press the button twice to compete the quest sequence."),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                  onPressed: () {
+                    Get.to(() => const Quest2Page(), routeName: routeQ2);
+                  },
+                  child: const Text("Press me")),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

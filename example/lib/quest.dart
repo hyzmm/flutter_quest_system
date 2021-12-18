@@ -54,7 +54,7 @@ initQuests() {
     ])
   ]);
 
-  QuestSystem.getSequence(MyQuestId.seq2)!.on((q) {
+  QuestSystem.getQuest<QuestSequence>(MyQuestId.seq2)!.on((q) {
     if (q.status == QuestStatus.completed) {
       QuestSystem.removeSequence(MyQuestId.seq2);
     }

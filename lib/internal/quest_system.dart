@@ -10,19 +10,13 @@ import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 class QuestSystem {
   static bool verbose = false;
 
-  static QuestSystem instance = QuestSystem._();
-
-  static final Map<Object, QuestSequence> seqCache = {};
-
-  static final Map<Object, Quest> questCache = {};
+  static final Map<Object, QuestNode> questMap = {};
 
   static final QuestRoot _root = QuestRoot([]);
 
   static final List<QuestTrigger> _triggers = [];
 
   QuestSystem._();
-
-  static void clear() => _root.clear();
 
   static dynamic acceptVisitor(QuestNodeVisitor visitor) =>
       _root.accept(visitor);
@@ -32,18 +26,22 @@ class QuestSystem {
     _root.dispatch(_root);
   }
 
-  static void removeSequence(Object id) {
-    if (seqCache.containsKey(id)) _root.remove(seqCache[id]!);
-  }
-
   static void addSequences(List<QuestSequence> seq) {
     _root.addAll(seq);
     _root.dispatch(_root);
   }
 
-  static QuestSequence? getSequence(Object id) => seqCache[id];
+  static void removeSequence(Object id) {
+    final seq = questMap.remove(id) as QuestSequence?;
+    if (seq != null)_root.remove(seq);
+  }
 
-  static T? getQuest<T extends Quest>(Object id) => questCache[id] as T;
+  static T? getQuest<T extends QuestNode>(Object id) => questMap[id] as T;
+
+  static void clear() {
+    _root.clear();
+    questMap.clear();
+  }
 
   static void addTrigger(QuestTrigger trigger) {
     if (trigger.isDestroyed) {

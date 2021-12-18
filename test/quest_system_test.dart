@@ -35,8 +35,6 @@ main() {
 
   setUp(() {
     QuestSystem.clear();
-    QuestSystem.questCache.clear();
-    QuestSystem.seqCache.clear();
   });
 
   test("single task queue", () {
@@ -60,9 +58,9 @@ main() {
       )
     ]));
 
-    final q1 = QuestSystem.getQuest(MyQuestId.q1)!;
-    final q2 = QuestSystem.getQuest(MyQuestId.q2)!;
-    final q3 = QuestSystem.getQuest(MyQuestId.q3)!;
+    final q1 = QuestSystem.getQuest<Quest>(MyQuestId.q1)!;
+    final q2 = QuestSystem.getQuest<Quest>(MyQuestId.q2)!;
+    final q3 = QuestSystem.getQuest<Quest>(MyQuestId.q3)!;
 
     expect(q1.status, QuestStatus.inactive);
     expect(q3.status, QuestStatus.inactive);
@@ -143,7 +141,7 @@ main() {
           ])
     ]));
 
-    final q = QuestSystem.getSequence(MyQuestSeqId.seq1)!;
+    final q = QuestSystem.getQuest<QuestSequence>(MyQuestSeqId.seq1)!;
 
     ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c1));
     ct.dispatch(const QuestTriggerData(condition: MyQuestCondition.c2));

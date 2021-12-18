@@ -5,7 +5,7 @@ import 'package:quest_system/internal/quest_system.dart';
 
 import '../quest.dart';
 
-class QuestBuilder<T extends Quest> extends StatefulWidget {
+class QuestBuilder<T extends QuestNode> extends StatefulWidget {
   final Object? questId;
   final T? quest;
 
@@ -23,7 +23,7 @@ class QuestBuilder<T extends Quest> extends StatefulWidget {
   _QuestBuilderState createState() => _QuestBuilderState<T>();
 }
 
-class _QuestBuilderState<T extends Quest> extends State<QuestBuilder<T>> {
+class _QuestBuilderState<T extends QuestNode> extends State<QuestBuilder<T>> {
   T? quest;
   StreamSubscription? _sub;
   StreamSubscription? _rootSub;

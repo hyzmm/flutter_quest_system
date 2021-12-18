@@ -1,7 +1,7 @@
 import 'package:quest_system/internal/quest.dart';
 import 'package:quest_system/internal/visitor/quest_node_visitor.dart';
 
-class JsonExportVisitor extends QuestNodeVisitor {
+class JsonExportVisitor implements QuestNodeVisitor {
   final Map<String, Map<String, dynamic>> _result = {};
 
   @override

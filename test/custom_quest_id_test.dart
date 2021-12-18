@@ -36,8 +36,6 @@ main() {
 
   setUp(() {
     QuestSystem.clear();
-    QuestSystem.questCache.clear();
-    QuestSystem.seqCache.clear();
   });
 
   test("custom quest id", () {
