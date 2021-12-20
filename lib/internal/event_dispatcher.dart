@@ -4,6 +4,8 @@ mixin EventDispatcher<T> {
   final StreamController<T> _controller =
       StreamController.broadcast(sync: true);
 
+  bool get isDestroyed => _controller.isClosed;
+
   StreamSubscription on(Function(T) callback) =>
       _controller.stream.listen(callback);
 
@@ -14,6 +16,4 @@ mixin EventDispatcher<T> {
   void destroy() {
     _controller.close();
   }
-
-  bool get isDestroyed => _controller.isClosed;
 }

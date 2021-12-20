@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quest_system/internal/trigger/quest_trigger.dart';
 import 'package:quest_system/internal/visitor/dispatch_visitor.dart';
@@ -70,7 +69,7 @@ abstract class QuestNode<T> with EventDispatcher<T> {
   void accept(QuestNodeVisitor visitor);
 }
 
-class QuestRoot extends QuestNode {
+class QuestRoot extends QuestNode<QuestRoot> {
   List<QuestSequence> quests;
 
   QuestRoot(this.quests) : super(Object());
@@ -153,6 +152,10 @@ class QuestSequence extends QuestNode<QuestSequence> {
   }
 }
 
+/// [Quest] 用来配置单项任务，表示一个非常具体的任务，不可再细分，
+/// 它会作为 [QuestGroup] 或者 [QuestSequence] 的子节点出现。例如被配置为「点击某个按钮」。
+/// `triggerChecker` 是用来检查能否激活还未激活的任务，
+/// `completeChecker` 则用来检查能否完成一个已激活的任务。
 class Quest extends QuestNode<Quest> {
   QuestStatus status = QuestStatus.inactive;
 
@@ -213,7 +216,6 @@ class QuestGroup extends Quest {
     required this.children,
     VoidCallback? onTrigger,
     VoidCallback? onComplete,
-    Key? uiKey,
   })  : assert((() => children.every((e) => e.runtimeType == Quest))(),
             "The children of QuestGroup must be Quest"),
         super(
