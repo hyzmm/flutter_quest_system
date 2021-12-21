@@ -41,21 +41,19 @@ QuestSystem 支持这些功能：
 
 Quest 用来配置单项任务，表示一个非常具体的任务，不可再细分，它会作为 QuestGroup 或者 QuestSequence 的子节点出现。例如被配置为「点击某个按钮」。
 
-QuestGroup 表示任务组，在任务组未激活的情况下，子任务不会被激活，而在子任务未全部完成的情况下，任务组也无法被完成。任务组和子任务的触发和完成条件都是独立的，不过有时候我们希望任务组激活时，子任务也自动激活，那子任务的触发条件（`triggerChecker`）就可以设置为 `QuestChecker.automate`，为了简化代码，Quest 提供了一个更方便命名构造函数 `Quest.autoTrigger`。另外，如果希望子任务全部完成时，任务组也自动完成，可以把任务组的完成条件（`completeChecker`）设置为 `QuestChecker.automate`。任务组的使用场景可以是完善用户资料这样的任务，因为只有设置完名字、头像等基本信息后才算完善用户资料。
+QuestGroup 表示任务组，有多个子任务，子任务是并行的。在任务组未激活的情况下，子任务不会被激活，而在子任务未全部完成的情况下，任务组也无法被完成。任务组和子任务的触发和完成条件都是独立的，不过有时候我们希望任务组激活时，子任务也自动激活，那子任务的触发条件（`triggerChecker`）就可以设置为 `QuestChecker.automate`，为了简化代码，Quest 提供了一个更方便命名构造函数 `Quest.autoTrigger`。另外，如果希望子任务全部完成时，任务组也自动完成，可以把任务组的完成条件（`completeChecker`）设置为 `QuestChecker.automate`。任务组的使用场景可以是完善用户资料这样的任务，因为只有设置完名字、头像等基本信息后才算完善用户资料。
 
 QuestSequnce 是一个串行任务，在前一个任务未完成时，后一个任务不会被检查是否应该激活，而后一个任务也能通过 `QuestChecker.automate` 在前一个任务完成时自动激活。串行任务使用在一个任务必须依赖前置任务已完成的情况下。QuestSequnce 是通过 `QuestSystem.addSequence` 初始化完成的，可以调用多次此接口添加多个串行任务，而多个串行任务允许被同时检查，也就是是配置并行任务的方式。
 
 任务树不能无限的嵌套下去，用户是通过 `QuestSystem.addSequence` 添加任务的  ，参数类型是 `QuestSequnce`，一个包含了所有任务类型的最简化树形结构是：
 
-```
-QuestSequence 1
-	Quest A
-		QuestGroup B
-			Quest C
-			... More Quest ...
-	... More Quest or QuestGroup ...
-... QuestSequence ...
-```
+- QuestSequence 1
+  - Quest A
+    - QuestGroup B
+      - Quest C
+      - ... More Quest ...
+  - ... More Quest or QuestGroup ...
+- ... QuestSequence ...
 
 Quest 模块的结构和组合模式非常接近，QuestSystem 通过语义限定了或者 assert 限制了无限嵌套，主要是因为考虑到多层嵌套对于任务系统来说没有现实意义。
 
@@ -65,11 +63,17 @@ Quest 模块的结构和组合模式非常接近，QuestSystem 通过语义限�
 
 ### Visitor
 
-Visitor 模块就是使用 Visitor 模式实现的，访问器接口是 QuestNodeVisitor，通过 `QuestSystem.acceptVisitor` 可以接受一个
+Visitor 模块就是使用 Visitor 模式实现的，访问器接口是 QuestNodeVisitor，`QuestSystem.acceptVisitor` 可以接受一个 Visitor，接着遍历整个任务树，对不同的任务节点触发不同的回调。在内置的代码中，任务检查、导出任务数据和导入任务数据都是通过 Visitor 实现的。
+
+> 因为 Visitor 是遍历现有的任务树，所以对于导入数据这种行为而言要格外小心，因为在任务未完成创建的时候，是没有办法导入数据的。
 
 ### ID
 
-无论是 Quest、QuestGroup 还是 QuestSequence 都有一个 id 参数，类型是 Object，这表示它能接受任意参数，不过实际上大多数情况，这个 id 都是一个枚举值。id 的作用是用来获取任务，或者是序列化成数据时用到的，如果不需要这两个功能，甚至可以给 id 传入 `Object()`，实际上 id 的关键是它的 `toString`，在「高级用法」中能看到用 Class 实例作为 id 的情况。
+无论是 Quest、QuestGroup 还是 QuestSequence 都有一个 id 参数，类型是 Object，这表示它能接受任意参数，不过实际上大多数情况，这个 id 都是一个枚举值。id 的作用是用来获取任务，或者是序列化成数据时用到的，如果不需要这两个功能，甚至可以给 id 传入 `Object()`，实际上 id 的关键是它的 `toString`。
+
+有种特殊情况是，同类型的任务可能同时被添加多次，那一个枚举就没办法区分两个同类型任务，它们还需要一个唯一 id，这时可以使用 `QuestId`，比如 `QuestId([QuestEnum.QuestA, uniqueId])`，QuestId 封装了 `toString`，它的返回值是构造函数传入的 List 的 `join`  结果，通过这种方式，可以调加多个 `QuestEnum.QuestA` 类型的任务。
+
+与 `QuestId` 类似的是有一个 `QuestCondition` 类，其作用和 `QuestId` 完全一样，仅用于区分语义，作为检查器条件使用。
 
 ## 使用
 
@@ -88,52 +92,65 @@ MaterialApp(
 ...
 ```
 
-配置任务：
+为了区分不同的 id，通常可以定义多个枚举：
 
 ```dart
-QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
-  Quest(...),
-  Quest(...),
-]));
+enum MyQuestSeqId { seq1,seq2 }
+enum MyQuestGroupId { group1 }
+enum MyQuestId { q1, q2, q3, seq2, q4, q5 }
+enum MyQuestCondition { c1, c2, c3, c4 }
 ```
 
-最后使用 `quest.on(...)`  或者 QuestBuilder 使用任务：
+接着初始化任务树，这个任务树的描述是：
+
+- 串行任务 1
+  - 任务组 1：自动激活任务，并在子任务全部完成时自动完成
+    - 任务 1：父任务激活时自动激活，关闭路由 routeQ1 时完成
+    - 任务 2：父任务激活时自动激活，触发器派发任务条件 `MyQuestId.q2` 时完成
+- 串行任务 2
+  - 任务 3：自动激活，关闭路由 routeQ2 时完成
+  - 任务 4：但是由于它在串行任务内，所以是在任务 3 完成时自动激活，再次关闭路由 routeQ2 时完成
+
+代码如下：
 
 ```dart
-QuestSystem.getQuest(id)!.on((quest) {
-  print(quest.status);
-});
-// or
-QuestBuilder<QuestGroup>.id(id,
-  builder: (QuestGroup? quest) {
-	return Text("${quest!.progress}/${quest.length} - ${quest.status.description}");
+  QuestSystem.addSequences([
+    QuestSequence(id: MyQuestSeqId.seq1, quests: [
+      QuestGroup(
+          id: MyQuestGroupId.group1,
+          triggerChecker: QuestChecker.automate(),
+          completeChecker: QuestChecker.automate(),
+          children: [
+            Quest.autoTrigger(
+                id: MyQuestId.q1,
+                completeChecker: QuestChecker.condition(
+                    const RouteCondition(routeName: routeQ1, isRemove: true))),
+            Quest.autoTrigger(
+                id: MyQuestId.q2,
+                completeChecker: QuestChecker.condition(MyQuestId.q2)),
+          ])
+    ]),
+    QuestSequence(id: MyQuestSeqId.seq2, quests: [
+      Quest.autoTrigger(
+          id: MyQuestId.q3,
+          completeChecker: QuestChecker.condition(
+              const RouteCondition(routeName: routeQ2, isRemove: true))),
+      Quest.autoTrigger(
+          id: MyQuestId.q4,
+          completeChecker: QuestChecker.condition(
+              const RouteCondition(routeName: routeQ2, isRemove: true)))
+    ])
+  ]);
+```
+
+使用 `QuestBuilder` 查询任务状态并显示任务组进度：
+
+```dart
+QuestBuilder<QuestGroup>.id(MyQuestGroupId.group1,
+    builder: (QuestGroup? quest) {
+  return Text(
+      "${quest!.progress}/${quest.length} - ${quest.status.description}");
 })
 ```
 
-## 用例
-
-创建两条简单的任务序列，在 Q1 完成后，激活 Q2，完成 Q2 后，任务全部完成。
-
-```
-QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
-  Quest(
-    id: QuestId.q1,
-    triggerChecker: QuestChecker.condition(QuestCondition.c1),
-    completeChecker: QuestChecker.condition(QuestCondition.c2),
-  ),
-  Quest(
-    id: QuestId.q2,
-    triggerChecker: QuestChecker.condition(QuestCondition.c1),
-    completeChecker: QuestChecker.condition(QuestCondition.c2),
-  )
-]));
-QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
-  Quest(
-    id: QuestId.q3,
-    triggerChecker: QuestChecker.condition(QuestCondition.c1),
-    completeChecker: QuestChecker.condition(QuestCondition.c2),
-  )
-]));
-```
-
-2. 
+> 待续...

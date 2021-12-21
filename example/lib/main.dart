@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:example/quest.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:quest_system/quest_system.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const routeQ1 = "/routeQ1";
 const routeQ2 = "/routeQ2";
@@ -15,6 +18,15 @@ void main() {
 
   // Second step: add quest to guidance system
   initQuests();
+
+  // Listen change and save data
+  // IMPORTANT:
+  QuestSystem.listenerAll(() async {
+    final sp = await SharedPreferences.getInstance();
+    final questData = QuestSystem.acceptVisitor(JsonExportVisitor());
+    sp.setString("quest", jsonEncode(questData));
+  });
+
   runApp(const MyApp());
 }
 
@@ -46,6 +58,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -54,8 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: ElevatedButton(
           onPressed: () {
             // Fourth step: trigger some conditions
-            CustomTrigger.instance.dispatch(
-                const QuestTriggerData(condition: MyQuestCondition.c3));
+            CustomTrigger.instance
+                .dispatch(const QuestTriggerData(condition: MyQuestId.q2));
           },
           child: const Text("Press me to complete Quest 2")),
       body: Padding(
@@ -86,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const Text("Quest 1",
                       style: TextStyle(fontWeight: FontWeight.w500)),
                   // Third step: listen to quest status change
-                  QuestBuilder<QuestGroup>.id(MyQuestId.q1,
+                  QuestBuilder<QuestGroup>.id(MyQuestGroupId.group1,
                       builder: (QuestGroup? quest) {
                     return Text(
                         "${quest!.progress}/${quest.length} - ${quest.status.description}");
@@ -98,11 +115,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 elevation: 5,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [MyQuestId.q2, MyQuestId.q3]
+                  children: [MyQuestId.q1, MyQuestId.q2]
                       .map((qId) =>
                           QuestBuilder<Quest>.id(qId, builder: (quest) {
                             return TextButton(
-                              onPressed: qId == MyQuestId.q3
+                              onPressed: qId == MyQuestId.q2
                                   ? null
                                   : () {
                                       Get.bottomSheet(
@@ -139,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildQ2Box() {
-    return QuestBuilder<QuestSequence>.id(MyQuestId.seq2, builder: (seq) {
+    return QuestBuilder<QuestSequence>.id(MyQuestSeqId.seq2, builder: (seq) {
       if (seq == null) return const Text("Quest Not Found");
       if (seq.status == QuestStatus.completed) return const SizedBox();
 
@@ -153,8 +170,8 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(MyQuestId.seq2.title,
-                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const Text("Quest Sequence 2",
+                      style: TextStyle(fontWeight: FontWeight.w500)),
                   Text("${seq.progress}/${seq.totalProgress}"),
                   Text(seq.status.description),
                 ],
