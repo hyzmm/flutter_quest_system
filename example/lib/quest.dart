@@ -51,10 +51,4 @@ initQuests() {
               const RouteCondition(routeName: routeQ2, isRemove: true)))
     ])
   ]);
-
-  QuestSystem.getQuest<QuestSequence>(MyQuestSeqId.seq2)!.on((q) {
-    if (q.status == QuestStatus.completed) {
-      QuestSystem.removeSequence(MyQuestSeqId.seq2);
-    }
-  });
 }

@@ -69,7 +69,7 @@ Visitor 模块就是使用 Visitor 模式实现的，访问器接口是 QuestNod
 
 ### ID
 
-无论是 Quest、QuestGroup 还是 QuestSequence 都有一个 id 参数，类型是 Object，这表示它能接受任意参数，不过实际上大多数情况，这个 id 都是一个枚举值。id 的作用是用来获取任务，或者是序列化成数据时用到的，如果不需要这两个功能，甚至可以给 id 传入 `Object()`，实际上 id 的关键是它的 `toString`。
+无论是 Quest、QuestGroup 还是 QuestSequence 都有一个 id 参数，类型是 Object，这表示它能接受任意参数，不过实际上大多数情况，这个 id 都是一个枚举值。id 的作用是用来获取任务，或者是序列化成数据时用到的，如果不需要这两个功能，甚至可以给 id 传入 `Object()`，实际上 id 的关键是它的等号运算符重载和 `toString`，前者用于判断任务，后者用于任务查找和数据导入和导出。为了确保正常工作，就要确保 `toString` 的结果是全局唯一的。
 
 有种特殊情况是，同类型的任务可能同时被添加多次，那一个枚举就没办法区分两个同类型任务，它们还需要一个唯一 id，这时可以使用 `QuestId`，比如 `QuestId([QuestEnum.QuestA, uniqueId])`，QuestId 封装了 `toString`，它的返回值是构造函数传入的 List 的 `join`  结果，通过这种方式，可以调加多个 `QuestEnum.QuestA` 类型的任务。
 
@@ -153,4 +153,96 @@ QuestBuilder<QuestGroup>.id(MyQuestGroupId.group1,
 })
 ```
 
-> 待续...
+## 序列化/反序列化
+
+通常，任务数据都希望能保存到本地或者网络上，QuestSystem 提供了一个默认的 JSON 序列化/反序列化工具。
+
+### 保存数据
+
+节点状态的任何变化都会触发 `QuestSystem.listenerAll` 回调，我们可以通过它收到任务更新的通知，所以可以通过它来保存数据。
+
+```dart
+QuestSystem.listenerAll(() async {
+  final sp = await SharedPreferences.getInstance();
+  final questData = QuestSystem.acceptVisitor(JsonExportVisitor());
+  sp.setString("quest", jsonEncode(questData));
+});
+```
+
+需要注意，一个子任务的完成可能会导致父任务的完成，这将会多次触发这个回调，但是我们不希望触发额外的数据保存，所以你需要添加一个防抖。
+
+### 读取数据
+
+与 `JsonExportVisitor` 对应的，还有一个 `JsonImportVisitor` 用来导入数据。一样的，它也是通过访问者实现的，这说明，导入数据之前，任务树中必须要有对应任务配置。
+
+```dart
+final sp = await SharedPreferences.getInstance();
+// await sp.clear();
+try {
+  final dataInString = sp.getString("quest") ?? "{}";
+  final localData = jsonDecode(dataInString);
+  QuestSystem.acceptVisitor(JsonImportVisitor(localData));
+} catch (e) {
+  /* */
+}
+```
+
+## 多个同类型任务
+
+有些比较特殊的场景，相同的任务能被调加到多个不同的场景中。例如，不同的群聊都需要完成引导任务，而且引导的内容一模一样，只是要在不同的群聊内完成。任务一样，说明任务 id 是一样的，但是同样的任务 id 是不能被添加多次，这会影响任务查找和数据导出。因此我们需要一个能够表示不同场景的同类型任务 id，这就是 `QuestId` 的作用，关于 `QuestId` 的更多介绍，可以参考 「ID」一节。
+
+假设我们的任务是在用户加入群聊时引导用户发送一条消息，加入不同的群聊都需要引导这个任务。那么我们有一个任务类型为发送消息。
+
+```dart
+enum MyQuest {
+  sendMessage,
+}
+```
+
+定义任务时不能使用这样的代码：
+
+```dart
+Quest(id: MyQuest.sendMessage, ... )
+```
+
+而是：
+
+```dart
+Quest(id: QuestId([MyQuest.sendMessage, chatId]), ... )
+```
+
+其中 `chatId` 是群聊的 id，每个群聊都有唯一的 id，任务树中也因此能够添加多个同类型任务。这类型的任务包含触发器的代码如下所示：
+
+```dart
+// 定义和添加任务
+Quest(
+  id: QuestId([MyQuest.sendMessage, chatId]),
+  triggerChecker: QuestChecker.condition(QuestCondition([MyQuest.sendMessage, chatId])),
+)
+...
+// 触发任务
+CustomTrigger.instance.dispatch(const QuestTriggerData(
+  condition: QuestCondition([MyQuest.sendMessage, chatId])
+));
+```
+
+就像上面说的那样，QuestCondition 和 QuestId 只是语义不同，功能一样。
+
+## 自定义任务检查
+
+有两种方式能够自定义检查逻辑。上面也说过，ID 和 Condition 是通过等号来判断一致性的，所以我们完全可以自定义一个 Class 作为 Condition，重载等号运算符去进行任务条件检查，就像 QuestCondition 做的那样。
+
+这里介绍另外第一种方式，如果自定义的任务检查的逻辑非常简单，定义类加上重载等号运算符显得有些繁琐，这种情况可以使用 `QuestChecker.custom` 构造器。
+
+```dart
+Quest(
+  id: ...,
+  triggerChecker: QuestChecker.custom((data) {
+		final condition = data.condition;
+    // 一些逻辑判断
+    return trueOrFalse;
+  }),
+)
+```
+
+`QuestChecker.custom` 的回调参数是 `QuestTriggerData` 类型，每次有任务数据被派发时，都会触发回调，并使用自定义的检查逻辑替代等号运算。返回 true 表示检查通过。

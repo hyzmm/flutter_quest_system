@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:example/quest.dart';
+import 'package:example/quest2_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -10,7 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 const routeQ1 = "/routeQ1";
 const routeQ2 = "/routeQ2";
 
-void main() {
+main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   QuestSystem.verbose = true;
   // First step: add quest triggers
   QuestSystem.addTrigger(RouteTrigger.instance);
@@ -18,16 +21,35 @@ void main() {
 
   // Second step: add quest to guidance system
   initQuests();
+  loadLoadData();
 
-  // Listen change and save data
-  // IMPORTANT:
+  /// Listen change and save data
+  /// IMPORTANT:
+  /// any change in the status of a node will trigger this callback,
+  /// for example, a child quest completing may cause the parent quest to complete as well,
+  /// which will trigger this callback multiple times.
+  /// So you need to add a debounce.
   QuestSystem.listenerAll(() async {
+    // TODO add a debounce
     final sp = await SharedPreferences.getInstance();
     final questData = QuestSystem.acceptVisitor(JsonExportVisitor());
     sp.setString("quest", jsonEncode(questData));
+    debugPrint("save data: ${jsonEncode(questData)}");
   });
 
   runApp(const MyApp());
+}
+
+Future<void> loadLoadData() async {
+  final sp = await SharedPreferences.getInstance();
+// await sp.clear();
+  try {
+    final dataInString = sp.getString("quest") ?? "{}";
+    final localData = jsonDecode(dataInString);
+    QuestSystem.acceptVisitor(JsonImportVisitor(localData));
+  } catch (e) {
+    /* */
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -192,22 +214,5 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     });
-  }
-}
-
-class Quest2Page extends StatefulWidget {
-  const Quest2Page({Key? key}) : super(key: key);
-
-  @override
-  _Quest2PageState createState() => _Quest2PageState();
-}
-
-class _Quest2PageState extends State<Quest2Page> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Quest 2")),
-      body: const Center(child: Text("Back to complete quest 2")),
-    );
   }
 }
