@@ -25,7 +25,7 @@ extension Quests on MyQuestId {
 
 initQuests() {
   QuestSystem.addSequences([
-    QuestSequence(id: MyQuestSeqId.seq1, quests: [
+    QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestGroupId.group1,
           triggerChecker: QuestChecker.automate(),
@@ -40,7 +40,7 @@ initQuests() {
                 completeChecker: QuestChecker.condition(MyQuestId.q2)),
           ])
     ]),
-    QuestSequence(id: MyQuestSeqId.seq2, quests: [
+    QuestSequence(id: MyQuestSeqId.seq2, children: [
       Quest.autoTrigger(
           id: MyQuestId.q3,
           completeChecker: QuestChecker.condition(

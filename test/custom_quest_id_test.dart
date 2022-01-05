@@ -39,8 +39,8 @@ main() {
   });
 
   test("custom quest id", () {
-    QuestSystem.addSequence(
-        QuestSequence(id: const CustomQuestId("a"), quests: [
+    QuestSystem.addQuestContainer(
+        QuestSequence(id: const CustomQuestId("a"), children: [
       QuestGroup(
           id: const CustomQuestId("b"),
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -58,8 +58,8 @@ main() {
       ),
     ]));
 
-    QuestSystem.addSequence(
-        QuestSequence(id: const CustomQuestId("e"), quests: [
+    QuestSystem.addQuestContainer(
+        QuestSequence(id: const CustomQuestId("e"), children: [
       Quest(
         id: const CustomQuestId("f"),
         triggerChecker: QuestChecker.automate(),

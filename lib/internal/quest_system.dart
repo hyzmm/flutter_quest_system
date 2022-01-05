@@ -21,8 +21,8 @@ class QuestSystem {
   static dynamic acceptVisitor(QuestNodeVisitor visitor) =>
       _root.accept(visitor);
 
-  static void addSequence(QuestSequence seq) {
-    _root.add(seq);
+  static void addQuestContainer(QuestContainer container) {
+    _root.add(container);
     _root.dispatch(_root);
   }
 

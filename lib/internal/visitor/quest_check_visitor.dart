@@ -23,9 +23,9 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     if (QuestSystem.verbose) log("Check quest sequence ${seq.id}", name: "QUEST");
 
     /// Quests completed
-    if (seq.progress >= seq.quests.length) return;
+    if (seq.progress >= seq.children.length) return;
 
-    final quest = seq.quests[seq.progress];
+    final quest = seq.children[seq.progress];
     quest.accept(this);
     if (quest.status == QuestStatus.completed) {
       seq.progress++;
@@ -38,7 +38,7 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     if (QuestSystem.verbose) log("Check quest group ${group.id}", name: "QUEST");
 
     // return true if sub quest's status changes
-    bool _checkSubQuest(Quest q) {
+    bool _checkSubQuest(QuestNode q) {
       final oldStatus = q.status;
       q.accept(this);
       final newStatus = q.status;
