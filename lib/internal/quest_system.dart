@@ -31,9 +31,9 @@ class QuestSystem {
     _root.dispatch(_root);
   }
 
-  static void removeSequence(Object id) {
-    final seq = questMap.remove(id) as QuestSequence?;
-    if (seq != null)_root.remove(seq);
+  static void removeContainer(Object id) {
+    final container = questMap.remove(id) as QuestContainer?;
+    if (container != null) _root.remove(container);
   }
 
   static T? getQuest<T extends QuestNode>(Object id) => questMap[id] as T;
@@ -61,7 +61,8 @@ class QuestSystem {
       _root.on((_) => callback());
 
   static void _onTrigger(QuestTriggerData data) {
-    if (verbose) log("Trigger Check with condition ${data.condition}", name: "QUEST");
+    if (verbose)
+      log("Trigger Check with condition ${data.condition}", name: "QUEST");
     _root.accept(QuestCheckVisitor(data));
   }
 }

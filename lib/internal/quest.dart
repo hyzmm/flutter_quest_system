@@ -97,10 +97,10 @@ class QuestRoot with EventDispatcher {
     sequences.forEach(add);
   }
 
-  void remove(QuestSequence seq) {
-    quests.remove(seq);
-    seq._subscription?.cancel();
-    seq.accept(const DispatchVisitor());
+  void remove(QuestContainer container) {
+    quests.remove(container);
+    container._subscription?.cancel();
+    container.accept(const DispatchVisitor());
   }
 
   void clear() {
@@ -244,7 +244,12 @@ class QuestGroup extends QuestContainer {
         super(
           id: id,
           children: children,
-        );
+        ) {
+    QuestSystem.questMap[id] = this;
+    for (var i = 0, len = children.length; i < len; i++) {
+      QuestSystem.questMap[children[i].id] = children[i];
+    }
+  }
 
   /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
   /// 例如，三个子任务完成了一个，完成率为 1/3
@@ -274,11 +279,13 @@ class QuestGroup extends QuestContainer {
 
   /// 添加一个任务，注意，如果父任务已经完成，刚添加的任务不会被完成，因为它不会被检查
   void add(Quest quest) {
+    QuestSystem.questMap[quest.id] = quest;
     children.add(quest);
     dispatch(this);
   }
 
   void remove(Quest quest) {
+    QuestSystem.questMap.remove(quest.id);
     children.remove(quest);
     dispatch(this);
   }
