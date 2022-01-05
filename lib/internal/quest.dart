@@ -93,7 +93,7 @@ class QuestRoot with EventDispatcher {
     container._subscription = container.on((_) => dispatch(this));
   }
 
-  void addAll(Iterable<QuestSequence> sequences) {
+  void addAll(Iterable<QuestContainer> sequences) {
     sequences.forEach(add);
   }
 

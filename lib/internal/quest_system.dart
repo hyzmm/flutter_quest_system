@@ -26,8 +26,8 @@ class QuestSystem {
     _root.dispatch(_root);
   }
 
-  static void addSequences(List<QuestSequence> seq) {
-    _root.addAll(seq);
+  static void addQuestContainers(List<QuestContainer> containers) {
+    _root.addAll(containers);
     _root.dispatch(_root);
   }
 

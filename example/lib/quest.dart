@@ -24,7 +24,7 @@ extension Quests on MyQuestId {
 }
 
 initQuests() {
-  QuestSystem.addSequences([
+  QuestSystem.addQuestContainers([
     QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestGroupId.group1,
