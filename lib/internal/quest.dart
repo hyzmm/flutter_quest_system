@@ -280,14 +280,19 @@ class QuestGroup extends QuestContainer {
   /// 添加一个任务，注意，如果父任务已经完成，刚添加的任务不会被完成，因为它不会被检查
   void add(Quest quest) {
     QuestSystem.questMap[quest.id] = quest;
-    children.add(quest);
+    final existingIndex = children.indexWhere((e) => e.id == quest.id);
+    if (existingIndex == -1) {
+      children.add(quest);
+    } else {
+      children[existingIndex] = quest;
+    }
     dispatch(this);
   }
 
   void remove(Quest quest) {
+    dispatch(this);
     QuestSystem.questMap.remove(quest.id);
     children.remove(quest);
-    dispatch(this);
   }
 
   void disconnectListeners() {

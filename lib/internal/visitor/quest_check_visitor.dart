@@ -20,7 +20,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuestSequence(QuestSequence seq) {
-    if (QuestSystem.verbose) log("Check quest sequence ${seq.id}", name: "QUEST");
+    if (QuestSystem.verbose)
+      log("Check quest sequence ${seq.id}", name: "QUEST");
 
     /// Quests completed
     if (seq.progress >= seq.children.length) return;
@@ -35,7 +36,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
 
   @override
   visitQuestGroup(QuestGroup group) {
-    if (QuestSystem.verbose) log("Check quest group ${group.id}", name: "QUEST");
+    if (QuestSystem.verbose)
+      log("Check quest group ${group.id}", name: "QUEST");
 
     // return true if sub quest's status changes
     bool _checkSubQuest(QuestNode q) {
@@ -51,7 +53,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     switch (group.status) {
       case QuestStatus.inactive:
         if (group.triggerChecker.check(data)) {
-          if (QuestSystem.verbose) log("Active quest group ${group.id}", name: "QUEST");
+          if (QuestSystem.verbose)
+            log("Active quest group ${group.id}", name: "QUEST");
 
           group.status = QuestStatus.activated;
           group.onTrigger?.call();
@@ -66,13 +69,16 @@ class QuestCheckVisitor implements QuestNodeVisitor {
         // if this quest is a group, it must complete all sub quests, then complete itself
         bool childrenCompleted = true;
         if (group.children.isNotEmpty) {
-          for (var q in group.children) {
+          for (var i = group.children.length - 1; i >= 0; i--) {
+            final q = group.children[i];
             if (_checkSubQuest(q)) shouldDispatch = true;
             if (q.status != QuestStatus.completed) childrenCompleted = false;
           }
         }
         if (childrenCompleted && group.completeChecker.check(data)) {
-          if (QuestSystem.verbose) log("Complete quest group ${group.id}", name: "QUEST");
+          if (QuestSystem.verbose) {
+            log("Complete quest group ${group.id}", name: "QUEST");
+          }
 
           group.status = QuestStatus.completed;
           group.onComplete?.call();
@@ -94,7 +100,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     switch (quest.status) {
       case QuestStatus.inactive:
         if (quest.triggerChecker.check(data)) {
-          if (QuestSystem.verbose) log("Active quest ${quest.id}", name: "QUEST");
+          if (QuestSystem.verbose)
+            log("Active quest ${quest.id}", name: "QUEST");
           quest.status = QuestStatus.activated;
           quest.onTrigger?.call();
           quest.dispatch(quest);
@@ -102,7 +109,8 @@ class QuestCheckVisitor implements QuestNodeVisitor {
         break;
       case QuestStatus.activated:
         if (quest.completeChecker.check(data)) {
-          if (QuestSystem.verbose) log("Complete quest ${quest.id}", name: "QUEST");
+          if (QuestSystem.verbose)
+            log("Complete quest ${quest.id}", name: "QUEST");
           quest.status = QuestStatus.completed;
           quest.onComplete?.call();
           quest.dispatch(quest);
