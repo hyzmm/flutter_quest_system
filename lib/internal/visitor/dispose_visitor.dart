@@ -31,7 +31,7 @@ class DisposeVisitor implements QuestNodeVisitor {
   visitQuestSequence(QuestSequence questSequence) {
     questSequence.destroy();
 
-    for (var e in questSequence.quests) {
+    for (var e in questSequence.children) {
       e.accept(this);
     }
   }

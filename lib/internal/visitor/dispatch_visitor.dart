@@ -32,7 +32,7 @@ class DispatchVisitor implements QuestNodeVisitor {
     questSequence.disconnectListeners();
     // questSequence.dispatch(questSequence);
 
-    for (var e in questSequence.quests) {
+    for (var e in questSequence.children) {
       e.accept(this);
     }
   }

@@ -23,7 +23,7 @@ class JsonExportVisitor implements QuestNodeVisitor {
           ? null
           : questSequence[questSequence.progress].id.toString(),
     };
-    for (var e in questSequence.quests) {
+    for (var e in questSequence.children) {
       e.accept(this);
     }
   }

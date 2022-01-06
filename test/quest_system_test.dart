@@ -38,7 +38,7 @@ main() {
   });
 
   test("single task queue", () {
-    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: Object(), children: [
       Quest(
         id: MyQuestId.q1,
         triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -50,7 +50,7 @@ main() {
         completeChecker: QuestChecker.condition(MyQuestCondition.c2),
       )
     ]));
-    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: Object(), children: [
       Quest(
         id: MyQuestId.q3,
         triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -78,7 +78,7 @@ main() {
   });
 
   test("auto active sub-quests, and manually complete parent quest", () {
-    QuestSystem.addSequence(QuestSequence(id: Object(), quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: Object(), children: [
       QuestGroup(
           id: MyQuestId.q4,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -124,7 +124,7 @@ main() {
   });
 
   test("auto active sub-quests, and auto complete parent quest", () {
-    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -158,7 +158,7 @@ main() {
   });
 
   test("json exporter", () {
-    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -175,7 +175,7 @@ main() {
         completeChecker: QuestChecker.condition(MyQuestCondition.c3),
       ),
     ]));
-    QuestSystem.addSequence(QuestSequence(id: MyQuestId.q4, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestId.q4, children: [
       Quest(
         id: MyQuestId.q5,
         triggerChecker: QuestChecker.automate(),
@@ -210,7 +210,7 @@ main() {
     expect(jsonEncode(data), jsonEncode(matcher));
   });
   test("json importer", () {
-    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -228,7 +228,7 @@ main() {
       ),
     ]));
 
-    QuestSystem.addSequence(QuestSequence(id: MyQuestId.q4, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestId.q4, children: [
       Quest(
         id: MyQuestId.q5,
         triggerChecker: QuestChecker.automate(),
@@ -256,7 +256,7 @@ main() {
       final onTriggerCallback = expectAsync0(() {}, count: 2);
       final onCompleteCallback = expectAsync0(() {}, count: 2);
 
-      QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+      QuestSystem.addQuestContainer(QuestSequence(id: MyQuestSeqId.seq1, children: [
         QuestGroup(
             id: MyQuestId.q1,
             triggerChecker: QuestChecker.condition(MyQuestCondition.c1),
@@ -279,7 +279,7 @@ main() {
     });
   });
   test("test listener callbacks", () {
-    QuestSystem.addSequence(QuestSequence(id: MyQuestSeqId.seq1, quests: [
+    QuestSystem.addQuestContainer(QuestSequence(id: MyQuestSeqId.seq1, children: [
       QuestGroup(
           id: MyQuestId.q1,
           triggerChecker: QuestChecker.condition(MyQuestCondition.c1),

@@ -19,7 +19,7 @@ class JsonImportVisitor implements QuestNodeVisitor<void> {
   void visitQuestSequence(QuestSequence questSequence) {
     final item = data[questSequence.id.toString()];
     if (item != null && item.containsKey("pointer")) {
-      final progressIndex = questSequence.quests
+      final progressIndex = questSequence.children
           .indexWhere((e) => e.id.toString() == item["pointer"]);
       if (progressIndex > -1) {
         questSequence.progress = progressIndex;
@@ -29,7 +29,7 @@ class JsonImportVisitor implements QuestNodeVisitor<void> {
     } else {
       questSequence.progress = 0;
     }
-    for (var e in questSequence.quests) {
+    for (var e in questSequence.children) {
       e.accept(this);
     }
   }
@@ -43,7 +43,7 @@ class JsonImportVisitor implements QuestNodeVisitor<void> {
   }
 
   @override
-  void visitQuest(Quest quest) {
+  void visitQuest(QuestNode quest) {
     final item = data[quest.id.toString()];
     if (item == null) return;
 

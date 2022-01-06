@@ -63,32 +63,44 @@ class QuestCondition extends QuestId {
 
 abstract class QuestNode<T> with EventDispatcher<T> {
   final Object id;
+  StreamSubscription? _subscription;
 
   QuestNode(this.id);
+
+  QuestStatus get status;
+
+  set status(QuestStatus v);
 
   void accept(QuestNodeVisitor visitor);
 }
 
-class QuestRoot extends QuestNode<QuestRoot> {
-  List<QuestSequence> quests;
+/// [QuestContainer] 表示保存多个任务的容器，实现它的接口可能是串行任务 [QuestSequence] 或者 任务组 [QuestGroup]
+abstract class QuestContainer extends QuestNode {
+  final List<QuestNode> children;
 
-  QuestRoot(this.quests) : super(Object());
+  QuestContainer({required Object id, required this.children}) : super(id);
+}
+
+class QuestRoot with EventDispatcher {
+  List<QuestContainer> quests;
+
+  QuestRoot(this.quests);
 
   get length => quests.length;
 
-  void add(QuestSequence sequence) {
-    quests.add(sequence);
-    sequence._subscription = sequence.on((_) => dispatch(this));
+  void add(QuestContainer container) {
+    quests.add(container);
+    container._subscription = container.on((_) => dispatch(this));
   }
 
-  void addAll(Iterable<QuestSequence> sequences) {
+  void addAll(Iterable<QuestContainer> sequences) {
     sequences.forEach(add);
   }
 
-  void remove(QuestSequence seq) {
-    quests.remove(seq);
-    seq._subscription?.cancel();
-    seq.accept(const DispatchVisitor());
+  void remove(QuestContainer container) {
+    quests.remove(container);
+    container._subscription?.cancel();
+    container.accept(const DispatchVisitor());
   }
 
   void clear() {
@@ -96,43 +108,48 @@ class QuestRoot extends QuestNode<QuestRoot> {
     quests.clear();
   }
 
-  @override
   dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestRoot(this);
   }
 
-  QuestSequence operator [](int index) => quests[index];
+  QuestContainer operator [](int index) => quests[index];
 }
 
 /// [QuestSequence] 是一个串行执行的任务序列，与之相关的还有任务组，[Quest] 赋予 children 属性就是任务组
-/// 如果调用多次 [QuestSystem.addSequence] 可以配置多条并行执行的任务
-class QuestSequence extends QuestNode<QuestSequence> {
-  final List<Quest> quests;
-
+/// 如果调用多次 [QuestSystem.addQuestContainer] 可以配置多条并行执行的任务
+class QuestSequence extends QuestContainer {
   int progress = 0;
 
-  int get totalProgress => quests.length;
+  int get totalProgress => children.length;
 
+  @override
   QuestStatus get status {
-    if (progress >= quests.length) return QuestStatus.completed;
+    if (progress >= children.length) return QuestStatus.completed;
     return QuestStatus.activated;
   }
 
-  StreamSubscription? _subscription;
+  @override
+  set status(QuestStatus v) {
+    throw "cannot set status on QuestSequence";
+  }
 
-  QuestSequence({required Object id, required this.quests}) : super(id) {
+  QuestSequence({required Object id, required List<QuestNode> children})
+      : super(
+          id: id,
+          children: children,
+        ) {
     QuestSystem.questMap[id] = this;
 
-    for (var i = 0, len = quests.length; i < len; i++) {
-      QuestSystem.questMap[quests[i].id] = quests[i];
+    for (var i = 0, len = children.length; i < len; i++) {
+      QuestSystem.questMap[children[i].id] = children[i];
 
-      if (quests[i] is QuestGroup) {
-        for (var e in (quests[i] as QuestGroup).children) {
+      if (children[i] is QuestGroup) {
+        for (var e in (children[i] as QuestGroup).children) {
           QuestSystem.questMap[e.id] = e;
         }
       }
 
-      quests[i]._subscription = quests[i].on((_) => dispatch(this));
+      children[i]._subscription = children[i].on((_) => dispatch(this));
     }
   }
 
@@ -142,13 +159,13 @@ class QuestSequence extends QuestNode<QuestSequence> {
   }
 
   void disconnectListeners() {
-    for (var e in quests) {
+    for (var e in children) {
       e._subscription?.cancel();
     }
   }
 
-  Quest operator [](int index) {
-    return quests[index];
+  QuestNode operator [](int index) {
+    return children[index];
   }
 }
 
@@ -157,13 +174,12 @@ class QuestSequence extends QuestNode<QuestSequence> {
 /// `triggerChecker` 是用来检查能否激活还未激活的任务，
 /// `completeChecker` 则用来检查能否完成一个已激活的任务。
 class Quest extends QuestNode<Quest> {
+  @override
   QuestStatus status = QuestStatus.inactive;
 
   QuestChecker triggerChecker;
 
   QuestChecker completeChecker;
-
-  StreamSubscription? _subscription;
 
   VoidCallback? onTrigger;
 
@@ -206,24 +222,34 @@ class Quest extends QuestNode<Quest> {
 }
 
 /// 任务组只有完成了全部子任务才能完成自身
-class QuestGroup extends Quest {
-  List<Quest> children;
+class QuestGroup extends QuestContainer {
+  @override
+  QuestStatus status = QuestStatus.inactive;
+
+  QuestChecker triggerChecker;
+  QuestChecker completeChecker;
+
+  VoidCallback? onTrigger;
+  VoidCallback? onComplete;
 
   QuestGroup({
     required Object id,
-    required QuestChecker triggerChecker,
-    required QuestChecker completeChecker,
-    required this.children,
-    VoidCallback? onTrigger,
-    VoidCallback? onComplete,
+    required this.triggerChecker,
+    required this.completeChecker,
+    required List<Quest> children,
+    this.onTrigger,
+    this.onComplete,
   })  : assert((() => children.every((e) => e.runtimeType == Quest))(),
             "The children of QuestGroup must be Quest"),
         super(
-            id: id,
-            triggerChecker: triggerChecker,
-            completeChecker: completeChecker,
-            onTrigger: onTrigger,
-            onComplete: onComplete);
+          id: id,
+          children: children,
+        ) {
+    QuestSystem.questMap[id] = this;
+    for (var i = 0, len = children.length; i < len; i++) {
+      QuestSystem.questMap[children[i].id] = children[i];
+    }
+  }
 
   /// 任务完成率范围从 0~1，未完成为 0，已完成为 1，如果这个任务有子任务，则取决于子任务完成度
   /// 例如，三个子任务完成了一个，完成率为 1/3
@@ -247,8 +273,26 @@ class QuestGroup extends Quest {
   int get length => children.length;
 
   @override
-  accept(QuestNodeVisitor visitor) {
+  dynamic accept(QuestNodeVisitor visitor) {
     return visitor.visitQuestGroup(this);
+  }
+
+  /// 添加一个任务，注意，如果父任务已经完成，刚添加的任务不会被完成，因为它不会被检查
+  void add(Quest quest) {
+    QuestSystem.questMap[quest.id] = quest;
+    final existingIndex = children.indexWhere((e) => e.id == quest.id);
+    if (existingIndex == -1) {
+      children.add(quest);
+    } else {
+      children[existingIndex] = quest;
+    }
+    dispatch(this);
+  }
+
+  void remove(Quest quest) {
+    dispatch(this);
+    QuestSystem.questMap.remove(quest.id);
+    children.remove(quest);
   }
 
   void disconnectListeners() {
@@ -257,5 +301,5 @@ class QuestGroup extends Quest {
     }
   }
 
-  Quest operator [](int i) => children[i];
+  Quest operator [](int i) => children[i] as Quest;
 }
