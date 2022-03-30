@@ -27,8 +27,9 @@ class QuestCheckVisitor implements QuestNodeVisitor {
     if (seq.progress >= seq.children.length) return;
 
     final quest = seq.children[seq.progress];
+    final oldStatus = quest.status;
     quest.accept(this);
-    if (quest.status == QuestStatus.completed) {
+    if (oldStatus != quest.status && quest.status == QuestStatus.completed) {
       seq.progress++;
       seq.dispatch(seq);
     }
