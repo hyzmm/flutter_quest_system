@@ -36,7 +36,7 @@ class QuestSystem {
     if (container != null) _root.remove(container);
   }
 
-  static T? getQuest<T extends QuestNode>(Object id) => questMap[id] as T;
+  static T? getQuest<T extends QuestNode>(Object id) => questMap[id] as T?;
 
   static void clear() {
     _root.clear();
