@@ -31,8 +31,25 @@ QuestSystem 支持这些功能：
 
 这些模块更复杂的介绍和配置在后面会详细描述。下图展示了 QuestSystem 的工作流程：
 
-![QuestSystem-Flow](https://mermaid.ink/img/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gICAgcGFydGljaXBhbnQgUXVlc3RcbiAgICBwYXJ0aWNpcGFudCBUcmlnZ2VyXG4gICAgcGFydGljaXBhbnQgUXVlc3RTeXN0ZW1cbiAgICBwYXJ0aWNpcGFudCBRdWVzdENoZWNrZXJWaXNpdG9yXG4gICAgXG4gICAgTm90ZSBvdmVyIFF1ZXN0U3lzdGVtOiDphY3nva4gUXVlc3Qg5ZKMIFRyaWdnZXJcbiAgICBsb29wIOS7u-WKoeajgOafpVxuICAgICAgICBUcmlnZ2VyIC0-PiBRdWVzdFN5c3RlbTog6Kem5Y-R5qOA5p-l5p2h5Lu2XG4gICAgICAgIFF1ZXN0U3lzdGVtIC0-PiBRdWVzdENoZWNrZXJWaXNvdG9yOiDpgY3ljobku7vliqHmoJFcbiAgICAgICAgYWx0IOS7u-WKoeeKtuaAgeS4uuacqua_gOa0u-S4lOespuWQiOa_gOa0u-adoeS7tlxuICAgICAgICAgICAgUXVlc3RDaGVja2VyVmlzb3RvciAtPj4gUXVlc3Q6IOabtOaUueS7u-WKoeeKtuaAgeS4uua_gOa0u1xuICAgICAgICBlbHNlIOS7u-WKoeeKtuaAgeS4uuW3sua_gOa0u-S4lOespuWQiOWujOaIkOadoeS7tlxuICAgICAgICAgICAgUXVlc3RDaGVja2VyVmlzb3RvciAtPj4gUXVlc3Q6IOabtOaUueS7u-WKoeeKtuaAgeS4uuW3suWujOaIkFxuICAgICAgICBlbmRcbiAgICBlbmRcblxuXG4gICAgICAgICAgICAiLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOnRydWUsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjpmYWxzZX0)
-
+```mermaid
+sequenceDiagram
+    participant Quest
+    participant Trigger
+    participant QuestSystem
+    participant QuestCheckerVisitor
+    
+    Note over QuestSystem: 配置 Quest 和 Trigger
+    loop 任务检查
+        Trigger ->> QuestSystem: 触发检查条件
+        QuestSystem ->> QuestCheckerVisotor: 遍历任务树
+        alt 任务状态为未激活且符合激活条件
+            QuestCheckerVisotor ->> Quest: 更改任务状态为激活
+        else 任务状态为已激活且符合完成条件
+            QuestCheckerVisotor ->> Quest: 更改任务状态为已完成
+        end
+    end
+```
+	    
 ### 任务
 
 任务有三个状态（QuestStatus）， 分别是未激活、已激活和已完成，任务的状态切换也是遵循这个顺序。`triggerChecker` 是用来检查能否激活还未激活的任务，`completeChecker` 则用来检查能否完成一个已激活的任务。
