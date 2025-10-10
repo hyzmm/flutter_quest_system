@@ -25,15 +25,17 @@ class RouteCondition {
   }
 }
 
-class RouteTrigger extends QuestTrigger with NavigatorObserver {
+class RouteTrigger extends QuestTrigger {
   static late RouteTrigger instance = RouteTrigger();
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     if (route.settings.name != null) {
-      dispatch(QuestTriggerData(
-          condition: RouteCondition(
-              routeName: route.settings.name!, isRemove: false)));
+      dispatch(
+        QuestTriggerData(
+          condition: RouteCondition(routeName: route.settings.name!, isRemove: false),
+        ),
+      );
     }
     super.didPush(route, previousRoute);
   }
@@ -41,9 +43,11 @@ class RouteTrigger extends QuestTrigger with NavigatorObserver {
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     if (route.settings.name != null) {
-      dispatch(QuestTriggerData(
-          condition:
-          RouteCondition(routeName: route.settings.name!, isRemove: true)));
+      dispatch(
+        QuestTriggerData(
+          condition: RouteCondition(routeName: route.settings.name!, isRemove: true),
+        ),
+      );
     }
     super.didPop(route, previousRoute);
   }
@@ -51,9 +55,11 @@ class RouteTrigger extends QuestTrigger with NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     if (route.settings.name != null) {
-      dispatch(QuestTriggerData(
-          condition:
-          RouteCondition(routeName: route.settings.name!, isRemove: true)));
+      dispatch(
+        QuestTriggerData(
+          condition: RouteCondition(routeName: route.settings.name!, isRemove: true),
+        ),
+      );
     }
     super.didRemove(route, previousRoute);
   }
@@ -61,14 +67,18 @@ class RouteTrigger extends QuestTrigger with NavigatorObserver {
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     if (newRoute?.settings.name != null) {
-      dispatch(QuestTriggerData(
-          condition: RouteCondition(
-              routeName: newRoute!.settings.name!, isRemove: false)));
+      dispatch(
+        QuestTriggerData(
+          condition: RouteCondition(routeName: newRoute!.settings.name!, isRemove: false),
+        ),
+      );
     }
     if (oldRoute?.settings.name != null) {
-      dispatch(QuestTriggerData(
-          condition: RouteCondition(
-              routeName: oldRoute!.settings.name!, isRemove: true)));
+      dispatch(
+        QuestTriggerData(
+          condition: RouteCondition(routeName: oldRoute!.settings.name!, isRemove: true),
+        ),
+      );
     }
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
   }
